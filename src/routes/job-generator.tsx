@@ -313,7 +313,9 @@ function JobGeneratorPage() {
           resumen: vacancy.resumen,
           competencias_detalle: vacancy.competencias,
           ui: { modalidad, tipoContratacion, nivel },
+        },
       } as never;
+
 
       let id = savedId;
       if (id) {
