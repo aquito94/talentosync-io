@@ -331,7 +331,7 @@ function CandidateAnalyzerPage() {
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-primary">
               <Sparkles className="h-3 w-3" /> Módulo IA
             </div>
-            <h1 className="mt-3 truncate text-3xl font-semibold tracking-tight md:text-4xl">
+            <h1 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl md:text-4xl">
               Evaluador Inteligente de Candidatos
             </h1>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground md:text-[15px]">
