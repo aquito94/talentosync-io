@@ -369,7 +369,24 @@ function JobGeneratorPage() {
                 )}
               </button>
             </div>
+
+            {(aiResponse || aiError) && (
+              <div className="mt-6 rounded-2xl border border-border-strong bg-surface/60 p-5">
+                <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-primary">
+                  <Sparkles className="h-3.5 w-3.5" />
+                  Respuesta de Gemini
+                </div>
+                {aiError ? (
+                  <p className="text-sm text-destructive">{aiError}</p>
+                ) : (
+                  <pre className="whitespace-pre-wrap break-words font-sans text-sm leading-relaxed text-foreground">
+                    {aiResponse}
+                  </pre>
+                )}
+              </div>
+            )}
           </section>
+
 
           {/* RIGHT: Copilot */}
           <aside className="space-y-4">
