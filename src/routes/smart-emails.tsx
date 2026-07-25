@@ -72,7 +72,7 @@ function SmartEmailsPage() {
             <Search className="h-4 w-4 text-muted-foreground" />
             <input placeholder="Buscar en la bandeja…" className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground" />
           </div>
-          <ul className="overflow-y-auto">
+          <ul className="flex-1 overflow-y-auto">
             {emails.map((e, i) => (
               <li key={i}>
                 <button
