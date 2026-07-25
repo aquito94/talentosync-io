@@ -92,6 +92,20 @@ const tabs = [
 
 type TabId = (typeof tabs)[number]["id"];
 
+type JobData = {
+  cargo: string;
+  empresa: string;
+  ciudad: string;
+  departamento: string;
+  modalidad: string;
+  tipoContratacion: string;
+  nivel: string;
+  salario: string;
+  competencias: string;
+  beneficios: string;
+  objetivoCargo: string;
+};
+
 function JobGeneratorPage() {
   const [skills, setSkills] = useState<string[]>(["React", "TypeScript", "GraphQL", "AWS"]);
   const [benefits, setBenefits] = useState<string[]>(["Seguro médico premium", "Trabajo remoto", "Bono anual"]);
@@ -99,7 +113,19 @@ function JobGeneratorPage() {
   const [benefitInput, setBenefitInput] = useState("");
   const [generated, setGenerated] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>("resumen");
+
+  const [cargo, setCargo] = useState("");
+  const [empresa, setEmpresa] = useState("");
+  const [ciudad, setCiudad] = useState("");
+  const [departamento, setDepartamento] = useState("Tecnología");
+  const [modalidad, setModalidad] = useState("Híbrido");
+  const [tipoContratacion, setTipoContratacion] = useState("Indefinido");
+  const [nivel, setNivel] = useState("Senior");
+  const [salarioMin, setSalarioMin] = useState("");
+  const [salarioMax, setSalarioMax] = useState("");
+  const [objetivoCargo, setObjetivoCargo] = useState("");
 
   const addChip = (value: string, list: string[], setList: (v: string[]) => void, setInput: (v: string) => void) => {
     const v = value.trim();
@@ -110,10 +136,26 @@ function JobGeneratorPage() {
   const removeChip = (value: string, list: string[], setList: (v: string[]) => void) =>
     setList(list.filter((s) => s !== value));
 
-  const handleGenerate = () => {
+  const generarVacante = async () => {
+    setLoading(true);
     setGenerating(true);
+    const jobData: JobData = {
+      cargo,
+      empresa,
+      ciudad,
+      departamento,
+      modalidad,
+      tipoContratacion,
+      nivel,
+      salario: salarioMin || salarioMax ? `${salarioMin} - ${salarioMax}` : "",
+      competencias: skills.join(", "),
+      beneficios: benefits.join(", "),
+      objetivoCargo,
+    };
+    console.log(jobData);
     setTimeout(() => {
       setGenerating(false);
+      setLoading(false);
       setGenerated(true);
       setActiveTab("resumen");
     }, 1400);
