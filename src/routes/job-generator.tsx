@@ -1,6 +1,14 @@
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { generateJobDescription, type JobVacancy } from "@/lib/job-generator.functions";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import {
+  exportVacancyPDF,
+  exportVacancyDOCX,
+  vacancyToPlainText,
+  type VacancyMeta,
+} from "@/lib/vacancy-export";
 
 import {
   Sparkles,
@@ -30,9 +38,17 @@ import {
   ArrowRight,
   Plus,
   X,
+  Share2,
+  Eye,
+  Pencil,
+  Copy as CopyIcon,
+  Trash2,
+  History,
+  Loader2,
 } from "lucide-react";
 import { AppShell } from "@/components/recruit/AppShell";
 import { createFileRoute } from "@tanstack/react-router";
+
 
 export const Route = createFileRoute("/job-generator")({
   head: () => ({
@@ -109,6 +125,44 @@ type JobData = {
   objetivoCargo: string;
 };
 
+type SavedVacancyRow = {
+  id: string;
+  cargo: string;
+  empresa: string;
+  ciudad: string | null;
+  departamento: string | null;
+  modalidad: string | null;
+  tipo_contratacion: string | null;
+  nivel: string | null;
+  salario_min: number | null;
+  salario_max: number | null;
+  estado: string | null;
+  updated_at: string;
+  created_at: string;
+  descripcion: string | null;
+  responsabilidades: unknown;
+  perfil_ideal: unknown;
+  competencias: unknown;
+  beneficios: unknown;
+  kpis: unknown;
+  preguntas_star: unknown;
+  palabras_clave_ats: unknown;
+  objetivo_cargo: string | null;
+  metadata: unknown;
+};
+
+const MODALIDAD_TO_DB: Record<string, string> = { Remoto: "remoto", "Híbrido": "hibrido", Presencial: "presencial" };
+const DB_TO_MODALIDAD: Record<string, string> = { remoto: "Remoto", hibrido: "Híbrido", presencial: "Presencial" };
+const TIPO_TO_DB: Record<string, string> = { Indefinido: "indefinido", Temporal: "temporal", "Por proyecto": "obra_labor", "Prácticas": "practicas", Freelance: "freelance" };
+const DB_TO_TIPO: Record<string, string> = { indefinido: "Indefinido", temporal: "Temporal", obra_labor: "Por proyecto", prestacion_servicios: "Por proyecto", practicas: "Prácticas", freelance: "Freelance" };
+const NIVEL_TO_DB: Record<string, string> = { Junior: "junior", Semi: "semi_senior", Senior: "senior", Lead: "lead" };
+const DB_TO_NIVEL: Record<string, string> = { junior: "Junior", semi_senior: "Semi", senior: "Senior", lead: "Lead", manager: "Lead", director: "Lead", ejecutivo: "Lead" };
+const parseNum = (v: string) => {
+  const n = parseFloat((v || "").replace(/[^0-9.]/g, ""));
+  return Number.isFinite(n) ? n : null;
+};
+
+
 function JobGeneratorPage() {
   const [skills, setSkills] = useState<string[]>(["React", "TypeScript", "GraphQL", "AWS"]);
   const [benefits, setBenefits] = useState<string[]>(["Seguro médico premium", "Trabajo remoto", "Bono anual"]);
@@ -131,8 +185,12 @@ function JobGeneratorPage() {
   const [objetivoCargo, setObjetivoCargo] = useState("");
   const [vacancy, setVacancy] = useState<JobVacancy | null>(null);
   const [aiError, setAiError] = useState("");
-  
 
+  const [savingId, setSavingId] = useState(false);
+  const [savedId, setSavedId] = useState<string | null>(null);
+  const [savedList, setSavedList] = useState<SavedVacancyRow[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+  
 
   const addChip = (value: string, list: string[], setList: (v: string[]) => void, setInput: (v: string) => void) => {
     const v = value.trim();
@@ -150,6 +208,7 @@ function JobGeneratorPage() {
     setGenerating(true);
     setAiError("");
     setVacancy(null);
+    setSavedId(null);
     try {
       const data = await invokeGenerate({
         data: {
@@ -171,7 +230,9 @@ function JobGeneratorPage() {
       setGenerated(true);
       setActiveTab("resumen");
     } catch (err) {
-      setAiError(err instanceof Error ? err.message : "Error al generar la vacante");
+      const msg = err instanceof Error ? err.message : "Error al generar la vacante";
+      setAiError(msg);
+      toast.error(msg);
     } finally {
       setGenerating(false);
       setLoading(false);
@@ -179,6 +240,232 @@ function JobGeneratorPage() {
   };
 
   const generarVacante = generateJob;
+
+  const meta: VacancyMeta = useMemo(() => ({
+    cargo: cargo || "Vacante",
+    empresa,
+    ciudad,
+    departamento,
+    modalidad,
+    tipoContratacion,
+    nivel,
+    salario: salarioMin || salarioMax ? `${salarioMin || "—"} a ${salarioMax || "—"}` : undefined,
+  }), [cargo, empresa, ciudad, departamento, modalidad, tipoContratacion, nivel, salarioMin, salarioMax]);
+
+  const ensureSession = useCallback(async () => {
+    const { data } = await supabase.auth.getSession();
+    if (data.session) return data.session;
+    const { data: anon, error } = await supabase.auth.signInAnonymously();
+    if (error) throw error;
+    return anon.session;
+  }, []);
+
+  const refreshHistory = useCallback(async () => {
+    setLoadingHistory(true);
+    try {
+      await ensureSession();
+      const { data, error } = await supabase
+        .from("vacantes")
+        .select("id, cargo, empresa, ciudad, modalidad, nivel, estado, updated_at, created_at, descripcion, responsabilidades, perfil_ideal, competencias, beneficios, kpis, preguntas_star, palabras_clave_ats, departamento, tipo_contratacion, salario_min, salario_max, objetivo_cargo, metadata")
+        .order("updated_at", { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      setSavedList((data as SavedVacancyRow[]) || []);
+    } catch (err) {
+      console.error(err);
+      toast.error("No se pudo cargar el historial");
+    } finally {
+      setLoadingHistory(false);
+    }
+  }, [ensureSession]);
+
+  useEffect(() => {
+    refreshHistory();
+  }, [refreshHistory]);
+
+  const handleSave = async () => {
+    if (!vacancy) return;
+    setSavingId(true);
+    try {
+      const session = await ensureSession();
+      if (!session) throw new Error("No hay sesión");
+      const row = {
+        user_id: session.user.id,
+        cargo: cargo || "Sin título",
+        empresa: empresa || "Sin empresa",
+        ciudad: ciudad || "",
+        departamento: departamento || null,
+        modalidad: MODALIDAD_TO_DB[modalidad] || null,
+        tipo_contratacion: TIPO_TO_DB[tipoContratacion] || null,
+        nivel: NIVEL_TO_DB[nivel] || null,
+        salario_min: parseNum(salarioMin),
+        salario_max: parseNum(salarioMax),
+        objetivo_cargo: objetivoCargo || null,
+        descripcion: vacancy.descripcion,
+        responsabilidades: vacancy.responsabilidades,
+        perfil_ideal: vacancy.perfil,
+        competencias: skills,
+        beneficios: vacancy.beneficios.length ? vacancy.beneficios : benefits,
+        kpis: vacancy.kpis as unknown as never,
+        preguntas_star: vacancy.preguntasStar as unknown as never,
+        palabras_clave_ats: vacancy.palabrasAts,
+        metadata: {
+          resumen: vacancy.resumen,
+          competencias_detalle: vacancy.competencias,
+          ui: { modalidad, tipoContratacion, nivel },
+        },
+      } as never;
+
+
+      let id = savedId;
+      if (id) {
+        const { error } = await supabase.from("vacantes").update(row).eq("id", id);
+        if (error) throw error;
+        toast.success("Vacante actualizada");
+      } else {
+        const { data, error } = await supabase.from("vacantes").insert(row).select("id").single();
+        if (error) throw error;
+        id = data.id as string;
+        setSavedId(id);
+        toast.success("Vacante guardada");
+      }
+      refreshHistory();
+    } catch (err) {
+      console.error(err);
+      toast.error(err instanceof Error ? err.message : "No se pudo guardar la vacante");
+    } finally {
+      setSavingId(false);
+    }
+  };
+
+  const handleCopy = async () => {
+    if (!vacancy) return;
+    try {
+      const text = vacancyToPlainText(meta, vacancy);
+      await navigator.clipboard.writeText(text);
+      toast.success("Copiado al portapapeles");
+    } catch {
+      toast.error("No se pudo copiar");
+    }
+  };
+
+  const handleShare = async () => {
+    if (!vacancy) return;
+    const text = vacancyToPlainText(meta, vacancy);
+    const title = `Vacante · ${cargo || "RecruitAI OS"}`;
+    try {
+      if (typeof navigator !== "undefined" && (navigator as Navigator & { share?: (d: ShareData) => Promise<void> }).share) {
+        await (navigator as Navigator & { share: (d: ShareData) => Promise<void> }).share({ title, text });
+        return;
+      }
+      await navigator.clipboard.writeText(text);
+      toast.success("Contenido copiado — pégalo donde desees compartirlo");
+    } catch (err) {
+      if ((err as Error)?.name === "AbortError") return;
+      toast.error("No se pudo compartir");
+    }
+  };
+
+  const handleExportPDF = async () => {
+    if (!vacancy) return;
+    try {
+      await exportVacancyPDF(meta, vacancy);
+      toast.success("PDF generado");
+    } catch (err) {
+      console.error(err);
+      toast.error("No se pudo generar el PDF");
+    }
+  };
+
+  const handleExportDOCX = async () => {
+    if (!vacancy) return;
+    try {
+      await exportVacancyDOCX(meta, vacancy);
+      toast.success("Word generado");
+    } catch (err) {
+      console.error(err);
+      toast.error("No se pudo generar el Word");
+    }
+  };
+
+  const loadFromRow = (row: SavedVacancyRow, mode: "view" | "edit" | "duplicate") => {
+    setCargo(row.cargo || "");
+    setEmpresa(row.empresa || "");
+    setCiudad(row.ciudad || "");
+    setDepartamento(row.departamento || "Tecnología");
+    setModalidad(DB_TO_MODALIDAD[row.modalidad || ""] || "Híbrido");
+    setTipoContratacion(DB_TO_TIPO[row.tipo_contratacion || ""] || "Indefinido");
+    setNivel(DB_TO_NIVEL[row.nivel || ""] || "Senior");
+    setSalarioMin(row.salario_min ? String(row.salario_min) : "");
+    setSalarioMax(row.salario_max ? String(row.salario_max) : "");
+    setObjetivoCargo(row.objetivo_cargo || "");
+    const comp = (row.competencias || {}) as { tecnicas?: string[]; blandas?: string[]; requeridas?: string[] };
+    if (Array.isArray(comp.requeridas) && comp.requeridas.length) setSkills(comp.requeridas);
+    if (Array.isArray(row.beneficios) && row.beneficios.length) setBenefits(row.beneficios as string[]);
+    const perfil = (row.perfil_ideal || {}) as { debeTener?: string[]; deseable?: string[] };
+    const md = (row.metadata || {}) as { resumen?: string };
+    setVacancy({
+      resumen: md.resumen || "",
+      descripcion: row.descripcion || "",
+      responsabilidades: (row.responsabilidades as string[]) || [],
+      perfil: { debeTener: perfil.debeTener || [], deseable: perfil.deseable || [] },
+      competencias: { tecnicas: comp.tecnicas || [], blandas: comp.blandas || [] },
+      beneficios: (row.beneficios as string[]) || [],
+      kpis: (row.kpis as { nombre: string; meta: string }[]) || [],
+      preguntasStar: (row.preguntas_star as { categoria: string; pregunta: string }[]) || [],
+      palabrasAts: (row.palabras_clave_ats as string[]) || [],
+    });
+    setGenerated(true);
+    setActiveTab("resumen");
+    setSavedId(mode === "duplicate" ? null : row.id);
+    toast.success(mode === "view" ? "Vacante cargada" : mode === "edit" ? "Editando vacante" : "Duplicada — guarda para conservar los cambios");
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleDelete = async (id: string) => {
+    if (typeof window !== "undefined" && !window.confirm("¿Eliminar esta vacante?")) return;
+    try {
+      const { error } = await supabase.from("vacantes").delete().eq("id", id);
+      if (error) throw error;
+      if (savedId === id) setSavedId(null);
+      setSavedList((l) => l.filter((r) => r.id !== id));
+      toast.success("Vacante eliminada");
+    } catch (err) {
+      console.error(err);
+      toast.error("No se pudo eliminar");
+    }
+  };
+
+  const handleExportRow = async (row: SavedVacancyRow, kind: "pdf" | "docx") => {
+    const rowMeta: VacancyMeta = {
+      cargo: row.cargo,
+      empresa: row.empresa,
+      ciudad: row.ciudad || "",
+      departamento: row.departamento || undefined,
+      modalidad: DB_TO_MODALIDAD[row.modalidad || ""] || undefined,
+      tipoContratacion: DB_TO_TIPO[row.tipo_contratacion || ""] || undefined,
+      nivel: DB_TO_NIVEL[row.nivel || ""] || undefined,
+      salario: row.salario_min || row.salario_max ? `${row.salario_min || "—"} a ${row.salario_max || "—"}` : undefined,
+    };
+    const perfil = (row.perfil_ideal || {}) as { debeTener?: string[]; deseable?: string[] };
+    const comp = (row.competencias || {}) as { tecnicas?: string[]; blandas?: string[] };
+    const md = (row.metadata || {}) as { resumen?: string };
+    const v: JobVacancy = {
+      resumen: md.resumen || "",
+      descripcion: row.descripcion || "",
+      responsabilidades: (row.responsabilidades as string[]) || [],
+      perfil: { debeTener: perfil.debeTener || [], deseable: perfil.deseable || [] },
+      competencias: { tecnicas: comp.tecnicas || [], blandas: comp.blandas || [] },
+      beneficios: (row.beneficios as string[]) || [],
+      kpis: (row.kpis as { nombre: string; meta: string }[]) || [],
+      preguntasStar: (row.preguntas_star as { categoria: string; pregunta: string }[]) || [],
+      palabrasAts: (row.palabras_clave_ats as string[]) || [],
+    };
+    if (kind === "pdf") await exportVacancyPDF(rowMeta, v);
+    else await exportVacancyDOCX(rowMeta, v);
+  };
+
+
 
 
   return (
@@ -201,11 +488,19 @@ function JobGeneratorPage() {
             <button className="rounded-xl border border-border-strong bg-surface/60 px-3.5 py-2 text-xs font-semibold text-muted-foreground transition hover:text-foreground">
               Cargar plantilla
             </button>
-            <button className="rounded-xl border border-border-strong bg-surface/60 px-3.5 py-2 text-xs font-semibold text-muted-foreground transition hover:text-foreground">
-              Historial
+            <button
+              onClick={() => {
+                
+                refreshHistory();
+                setTimeout(() => document.getElementById("vacantes-guardadas")?.scrollIntoView({ behavior: "smooth" }), 50);
+              }}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-border-strong bg-surface/60 px-3.5 py-2 text-xs font-semibold text-muted-foreground transition hover:text-foreground"
+            >
+              <History className="h-3.5 w-3.5" /> Historial ({savedList.length})
             </button>
           </div>
         </div>
+
 
         {/* Main grid */}
         <div className="mt-8 grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
@@ -506,14 +801,16 @@ function JobGeneratorPage() {
                   </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <ActionBtn icon={Save} label="Guardar" />
-                  <ActionBtn icon={Download} label="Exportar PDF" />
-                  <ActionBtn icon={FileType2} label="Exportar Word" />
-                  <ActionBtn icon={Copy} label="Copiar" />
-                  <button className="inline-flex items-center gap-2 rounded-xl gradient-primary px-3.5 py-2 text-xs font-semibold text-white shadow-glow">
+                  <ActionBtn icon={savingId ? Loader2 : Save} label={savedId ? "Actualizar" : "Guardar"} onClick={handleSave} loading={savingId} />
+                  <ActionBtn icon={Download} label="Exportar PDF" onClick={handleExportPDF} />
+                  <ActionBtn icon={FileType2} label="Exportar Word" onClick={handleExportDOCX} />
+                  <ActionBtn icon={Copy} label="Copiar" onClick={handleCopy} />
+                  <ActionBtn icon={Share2} label="Compartir" onClick={handleShare} />
+                  <button className="inline-flex items-center gap-2 rounded-xl gradient-primary px-3.5 py-2 text-xs font-semibold text-white shadow-glow hover:brightness-110">
                     <Send className="h-3.5 w-3.5" /> Publicar
                   </button>
                 </div>
+
               </div>
 
               {/* Tabs */}
@@ -544,18 +841,108 @@ function JobGeneratorPage() {
             </div>
           )}
         </section>
+
+        {/* HISTORIAL */}
+        <section id="vacantes-guardadas" className="mt-10">
+          <div className="mb-4 flex items-end justify-between">
+            <div>
+              <h2 className="text-xl font-semibold tracking-tight">Vacantes guardadas</h2>
+              <p className="text-xs text-muted-foreground">Todas las vacantes generadas y guardadas en tu cuenta.</p>
+            </div>
+            <button
+              onClick={refreshHistory}
+              className="rounded-xl border border-border-strong bg-surface/60 px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground"
+            >
+              Actualizar
+            </button>
+          </div>
+
+          {loadingHistory ? (
+            <div className="glass-panel grid place-items-center rounded-2xl py-16 text-sm text-muted-foreground">
+              <Loader2 className="mb-2 h-5 w-5 animate-spin text-primary" />
+              Cargando historial…
+            </div>
+          ) : savedList.length === 0 ? (
+            <div className="glass-panel rounded-2xl px-6 py-14 text-center">
+              <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-primary/15 text-primary">
+                <History className="h-5 w-5" />
+              </div>
+              <p className="mt-3 text-sm font-semibold">Aún no tienes vacantes guardadas</p>
+              <p className="mt-1 text-xs text-muted-foreground">Genera una vacante y pulsa “Guardar” para verla aquí.</p>
+            </div>
+          ) : (
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {savedList.map((row) => (
+                <article
+                  key={row.id}
+                  className={`glass-panel group rounded-2xl p-4 transition hover:border-primary/40 ${savedId === row.id ? "ring-1 ring-primary/60" : ""}`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <h3 className="truncate text-sm font-semibold">{row.cargo}</h3>
+                      <p className="truncate text-[11px] text-muted-foreground">
+                        {row.empresa}{row.ciudad ? ` · ${row.ciudad}` : ""}
+                      </p>
+                    </div>
+                    <span className="shrink-0 rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary">
+                      {row.estado || "borrador"}
+                    </span>
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-1.5 text-[10px] text-muted-foreground">
+                    {row.modalidad && <span className="rounded-md bg-surface/70 px-2 py-0.5">{DB_TO_MODALIDAD[row.modalidad] || row.modalidad}</span>}
+                    {row.nivel && <span className="rounded-md bg-surface/70 px-2 py-0.5">{DB_TO_NIVEL[row.nivel] || row.nivel}</span>}
+                    {row.tipo_contratacion && <span className="rounded-md bg-surface/70 px-2 py-0.5">{DB_TO_TIPO[row.tipo_contratacion] || row.tipo_contratacion}</span>}
+                  </div>
+                  <p className="mt-3 text-[11px] text-muted-foreground">
+                    Actualizada {new Date(row.updated_at).toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" })}
+                  </p>
+                  <div className="mt-4 grid grid-cols-3 gap-1.5">
+                    <MiniAction icon={Eye} label="Ver" onClick={() => loadFromRow(row, "view")} />
+                    <MiniAction icon={Pencil} label="Editar" onClick={() => loadFromRow(row, "edit")} />
+                    <MiniAction icon={CopyIcon} label="Duplicar" onClick={() => loadFromRow(row, "duplicate")} />
+                    <MiniAction icon={Download} label="PDF" onClick={() => handleExportRow(row, "pdf")} />
+                    <MiniAction icon={FileType2} label="Word" onClick={() => handleExportRow(row, "docx")} />
+                    <MiniAction icon={Trash2} label="Eliminar" onClick={() => handleDelete(row.id)} danger />
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
       </div>
     </AppShell>
+
   );
 }
 
-function ActionBtn({ icon: Icon, label }: { icon: React.ComponentType<{ className?: string }>; label: string }) {
+function MiniAction({ icon: Icon, label, onClick, danger }: { icon: React.ComponentType<{ className?: string }>; label: string; onClick?: () => void; danger?: boolean }) {
   return (
-    <button className="inline-flex items-center gap-2 rounded-xl border border-border-strong bg-surface/60 px-3.5 py-2 text-xs font-semibold text-muted-foreground transition hover:text-foreground">
-      <Icon className="h-3.5 w-3.5" /> {label}
+    <button
+      onClick={onClick}
+      className={`inline-flex items-center justify-center gap-1 rounded-lg border px-2 py-1.5 text-[11px] font-semibold transition ${
+        danger
+          ? "border-destructive/40 bg-destructive/10 text-destructive hover:bg-destructive/20"
+          : "border-border-strong bg-surface/60 text-muted-foreground hover:border-primary/40 hover:text-foreground"
+      }`}
+    >
+      <Icon className="h-3 w-3" /> {label}
     </button>
   );
 }
+
+function ActionBtn({ icon: Icon, label, onClick, loading }: { icon: React.ComponentType<{ className?: string }>; label: string; onClick?: () => void; loading?: boolean }) {
+
+  return (
+    <button
+      onClick={onClick}
+      disabled={loading}
+      className="inline-flex items-center gap-2 rounded-xl border border-border-strong bg-surface/60 px-3.5 py-2 text-xs font-semibold text-muted-foreground transition hover:border-primary/50 hover:text-foreground disabled:opacity-60"
+    >
+      <Icon className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} /> {label}
+    </button>
+  );
+}
+
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
