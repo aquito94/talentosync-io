@@ -125,6 +125,44 @@ type JobData = {
   objetivoCargo: string;
 };
 
+type SavedVacancyRow = {
+  id: string;
+  cargo: string;
+  empresa: string;
+  ciudad: string | null;
+  departamento: string | null;
+  modalidad: string | null;
+  tipo_contratacion: string | null;
+  nivel: string | null;
+  salario_min: number | null;
+  salario_max: number | null;
+  estado: string | null;
+  updated_at: string;
+  created_at: string;
+  descripcion: string | null;
+  responsabilidades: unknown;
+  perfil_ideal: unknown;
+  competencias: unknown;
+  beneficios: unknown;
+  kpis: unknown;
+  preguntas_star: unknown;
+  palabras_clave_ats: unknown;
+  objetivo_cargo: string | null;
+  metadata: unknown;
+};
+
+const MODALIDAD_TO_DB: Record<string, string> = { Remoto: "remoto", "Híbrido": "hibrido", Presencial: "presencial" };
+const DB_TO_MODALIDAD: Record<string, string> = { remoto: "Remoto", hibrido: "Híbrido", presencial: "Presencial" };
+const TIPO_TO_DB: Record<string, string> = { Indefinido: "indefinido", Temporal: "temporal", "Por proyecto": "obra_labor", "Prácticas": "practicas", Freelance: "freelance" };
+const DB_TO_TIPO: Record<string, string> = { indefinido: "Indefinido", temporal: "Temporal", obra_labor: "Por proyecto", prestacion_servicios: "Por proyecto", practicas: "Prácticas", freelance: "Freelance" };
+const NIVEL_TO_DB: Record<string, string> = { Junior: "junior", Semi: "semi_senior", Senior: "senior", Lead: "lead" };
+const DB_TO_NIVEL: Record<string, string> = { junior: "Junior", semi_senior: "Semi", senior: "Senior", lead: "Lead", manager: "Lead", director: "Lead", ejecutivo: "Lead" };
+const parseNum = (v: string) => {
+  const n = parseFloat((v || "").replace(/[^0-9.]/g, ""));
+  return Number.isFinite(n) ? n : null;
+};
+
+
 function JobGeneratorPage() {
   const [skills, setSkills] = useState<string[]>(["React", "TypeScript", "GraphQL", "AWS"]);
   const [benefits, setBenefits] = useState<string[]>(["Seguro médico premium", "Trabajo remoto", "Bono anual"]);
