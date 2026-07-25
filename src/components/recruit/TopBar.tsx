@@ -2,20 +2,20 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { Bell, ChevronDown, ChevronRight, Search, Sparkles } from "lucide-react";
 
 const labels: Record<string, string> = {
-  "": "Dashboard",
-  "job-generator": "AI Job Generator",
-  "candidate-analyzer": "Candidate Analyzer",
-  "recruit-copilot": "Recruit Copilot",
-  "smart-emails": "Smart Emails",
-  "analytics": "Analytics",
-  "prompt-library": "Prompt Library",
-  "settings": "Settings",
+  "": "Inicio",
+  "job-generator": "Generador Inteligente de Vacantes",
+  "candidate-analyzer": "Evaluador Inteligente de Candidatos",
+  "recruit-copilot": "Copiloto IA para Reclutadores",
+  "smart-emails": "Correos Inteligentes",
+  "analytics": "Analítica y KPIs",
+  "prompt-library": "Biblioteca de Prompts",
+  "settings": "Configuración",
 };
 
 export function TopBar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const segments = pathname.split("/").filter(Boolean);
-  const current = segments.length === 0 ? "Dashboard" : labels[segments[0]] ?? segments[0];
+  const current = segments.length === 0 ? "Inicio" : labels[segments[0]] ?? segments[0];
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-border/60 bg-background/70 px-6 backdrop-blur-xl">
@@ -28,12 +28,12 @@ export function TopBar() {
         <span className="font-medium text-foreground">{current}</span>
       </nav>
 
-      {/* Global search */}
+      {/* Buscador global */}
       <div className="ml-auto flex flex-1 max-w-md items-center gap-2 rounded-xl border border-border-strong bg-surface/60 px-3.5 py-2 text-sm text-muted-foreground transition focus-within:border-primary/60 focus-within:shadow-glow">
         <Search className="h-4 w-4" />
         <input
           type="text"
-          placeholder="Search candidates, jobs, prompts…"
+          placeholder="Buscar candidatos, vacantes, prompts…"
           className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
         />
         <kbd className="rounded border border-border bg-background/60 px-1.5 py-0.5 text-[10px] font-medium">
@@ -53,11 +53,11 @@ export function TopBar() {
 
         <div className="ml-2 flex items-center gap-2.5 rounded-xl border border-border-strong bg-surface/60 px-2 py-1 pr-3 transition hover:bg-surface">
           <div className="grid h-7 w-7 place-items-center rounded-lg gradient-primary text-xs font-semibold text-white">
-            AM
+            ÁM
           </div>
           <div className="hidden sm:block leading-tight">
-            <div className="text-xs font-semibold">Alex Morán</div>
-            <div className="text-[10px] text-muted-foreground">Head of Talent</div>
+            <div className="text-xs font-semibold">Álvaro Morán</div>
+            <div className="text-[10px] text-muted-foreground">Director de Talento</div>
           </div>
           <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
         </div>

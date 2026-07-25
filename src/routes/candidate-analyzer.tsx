@@ -1,6 +1,5 @@
 import { useState } from "react";
 import {
-  Users,
   Search,
   Filter,
   Star,
@@ -19,10 +18,10 @@ import { createFileRoute } from "@tanstack/react-router";
 export const Route = createFileRoute("/candidate-analyzer")({
   head: () => ({
     meta: [
-      { title: "Candidate Analyzer — RecruitAI OS" },
-      { name: "description", content: "Rank, score and compare candidates with explainable AI signals across skills, culture and intent." },
-      { property: "og:title", content: "Candidate Analyzer — RecruitAI OS" },
-      { property: "og:description", content: "Rank, score and compare candidates with explainable AI signals across skills, culture and intent." },
+      { title: "Evaluador Inteligente de Candidatos — RecruitAI OS" },
+      { name: "description", content: "Clasifica, puntúa y compara candidatos con señales explicables de IA sobre habilidades, cultura e intención." },
+      { property: "og:title", content: "Evaluador Inteligente de Candidatos — RecruitAI OS" },
+      { property: "og:description", content: "Clasifica, puntúa y compara candidatos con señales explicables de IA sobre habilidades, cultura e intención." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -31,20 +30,20 @@ export const Route = createFileRoute("/candidate-analyzer")({
 });
 
 const candidates = [
-  { id: 1, name: "Elena Ruiz", role: "Senior Frontend Engineer", location: "Madrid, ES", score: 96, status: "Top match", years: 8, avatar: "ER" },
-  { id: 2, name: "David Chen", role: "Full-Stack Engineer", location: "Berlin, DE", score: 92, status: "Strong", years: 6, avatar: "DC" },
-  { id: 3, name: "Aisha Khan", role: "Staff Engineer", location: "London, UK", score: 89, status: "Strong", years: 10, avatar: "AK" },
-  { id: 4, name: "Mateo Silva", role: "Senior Backend Engineer", location: "Lisbon, PT", score: 84, status: "Review", years: 7, avatar: "MS" },
-  { id: 5, name: "Nina Larsson", role: "Frontend Engineer", location: "Stockholm, SE", score: 78, status: "Review", years: 4, avatar: "NL" },
-  { id: 6, name: "Julien Petit", role: "Full-Stack Engineer", location: "Paris, FR", score: 74, status: "Consider", years: 5, avatar: "JP" },
+  { id: 1, name: "Elena Ruiz", role: "Ingeniera Frontend Senior", location: "Madrid, ES", score: 96, status: "Mejor coincidencia", years: 8, avatar: "ER" },
+  { id: 2, name: "David Chen", role: "Ingeniero Full-Stack", location: "Berlín, DE", score: 92, status: "Fuerte", years: 6, avatar: "DC" },
+  { id: 3, name: "Aisha Khan", role: "Ingeniera Staff", location: "Londres, UK", score: 89, status: "Fuerte", years: 10, avatar: "AK" },
+  { id: 4, name: "Mateo Silva", role: "Ingeniero Backend Senior", location: "Lisboa, PT", score: 84, status: "Revisar", years: 7, avatar: "MS" },
+  { id: 5, name: "Nina Larsson", role: "Ingeniera Frontend", location: "Estocolmo, SE", score: 78, status: "Revisar", years: 4, avatar: "NL" },
+  { id: 6, name: "Julien Petit", role: "Ingeniero Full-Stack", location: "París, FR", score: 74, status: "Considerar", years: 5, avatar: "JP" },
 ];
 
 const skills = [
   { name: "React / TypeScript", score: 98 },
-  { name: "System design", score: 92 },
-  { name: "Team leadership", score: 88 },
-  { name: "Product sense", score: 85 },
-  { name: "Communication", score: 94 },
+  { name: "Diseño de sistemas", score: 92 },
+  { name: "Liderazgo de equipo", score: 88 },
+  { name: "Visión de producto", score: 85 },
+  { name: "Comunicación", score: 94 },
 ];
 
 function CandidateAnalyzerPage() {
@@ -57,18 +56,18 @@ function CandidateAnalyzerPage() {
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between animate-float-up">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-border-strong bg-surface/60 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              <Sparkles className="h-3 w-3 text-primary" /> AI Module
+              <Sparkles className="h-3 w-3 text-primary" /> Módulo IA
             </div>
-            <h1 className="mt-3 text-3xl font-semibold tracking-tight">Candidate Analyzer</h1>
-            <p className="mt-1 text-sm text-muted-foreground">1,248 candidates · scored by explainable AI signals</p>
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight">Evaluador Inteligente de Candidatos</h1>
+            <p className="mt-1 text-sm text-muted-foreground">1.248 candidatos · puntuados por señales explicables de IA</p>
           </div>
           <div className="flex gap-2">
             <div className="flex items-center gap-2 rounded-xl border border-border-strong bg-surface/60 px-3 py-2 text-sm text-muted-foreground">
               <Search className="h-4 w-4" />
-              <input placeholder="Search candidates…" className="w-52 bg-transparent outline-none text-foreground text-sm" />
+              <input placeholder="Buscar candidatos…" className="w-52 bg-transparent outline-none text-foreground text-sm" />
             </div>
             <button className="rounded-xl border border-border-strong bg-surface/60 px-3 py-2 text-sm font-medium">
-              <Filter className="mr-2 inline h-4 w-4" /> Filters
+              <Filter className="mr-2 inline h-4 w-4" /> Filtros
             </button>
           </div>
         </div>
@@ -77,8 +76,8 @@ function CandidateAnalyzerPage() {
           {/* List */}
           <div className="glass-panel rounded-2xl overflow-hidden animate-float-up">
             <div className="flex items-center justify-between border-b border-border/60 px-5 py-3 text-xs uppercase tracking-[0.14em] text-muted-foreground">
-              <span>Candidate</span>
-              <span className="hidden md:inline">AI Score</span>
+              <span>Candidato</span>
+              <span className="hidden md:inline">Puntaje IA</span>
             </div>
             <ul>
               {candidates.map((c) => {
@@ -98,7 +97,7 @@ function CandidateAnalyzerPage() {
                           <StatusPill status={c.status} />
                         </div>
                         <div className="mt-0.5 text-xs text-muted-foreground truncate">
-                          {c.role} · {c.location} · {c.years}y
+                          {c.role} · {c.location} · {c.years} años
                         </div>
                       </div>
                       <div className="hidden md:flex flex-col items-end gap-1 w-40">
@@ -126,19 +125,19 @@ function CandidateAnalyzerPage() {
               </div>
               <div className="ml-auto text-right">
                 <div className="text-2xl font-semibold gradient-text">{selected.score}</div>
-                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">AI Match</div>
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Coincidencia IA</div>
               </div>
             </div>
 
             <div className="mt-5 grid grid-cols-3 gap-2 text-center">
-              <MiniStat icon={Briefcase} label="Exp" value={`${selected.years}y`} />
-              <MiniStat icon={MapPin} label="Zone" value="EU" />
-              <MiniStat icon={GraduationCap} label="Level" value="Senior" />
+              <MiniStat icon={Briefcase} label="Experiencia" value={`${selected.years}a`} />
+              <MiniStat icon={MapPin} label="Zona" value="UE" />
+              <MiniStat icon={GraduationCap} label="Nivel" value="Senior" />
             </div>
 
             <div className="mt-6">
               <div className="mb-3 flex items-center justify-between">
-                <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Skill breakdown</h3>
+                <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Desglose de habilidades</h3>
                 <TrendingUp className="h-3.5 w-3.5 text-primary" />
               </div>
               <div className="space-y-3">
@@ -158,19 +157,19 @@ function CandidateAnalyzerPage() {
 
             <div className="mt-6 rounded-xl border border-border-strong bg-surface/40 p-4">
               <div className="flex items-center gap-2 text-xs font-semibold">
-                <Award className="h-4 w-4 text-primary" /> AI recommendation
+                <Award className="h-4 w-4 text-primary" /> Recomendación de la IA
               </div>
               <p className="mt-2 text-xs text-muted-foreground">
-                Elena's profile aligns 96% with your Senior Frontend role. Strong culture indicators and proven leadership on high-growth SaaS teams. Move to interview.
+                El perfil de Elena tiene un 96% de alineación con tu vacante de Frontend Senior. Fuertes indicadores culturales y liderazgo demostrado en equipos SaaS de alto crecimiento. Avanzar a entrevista.
               </p>
               <div className="mt-3 flex items-center gap-2 text-[11px] text-muted-foreground">
-                <CheckCircle2 className="h-3.5 w-3.5 text-success" /> Verified references
+                <CheckCircle2 className="h-3.5 w-3.5 text-success" /> Referencias verificadas
               </div>
             </div>
 
             <div className="mt-5 flex gap-2">
               <button className="flex-1 rounded-xl gradient-primary py-2.5 text-sm font-semibold text-white shadow-glow">
-                <Star className="mr-2 inline h-4 w-4" /> Shortlist
+                <Star className="mr-2 inline h-4 w-4" /> Preseleccionar
               </button>
               <button className="rounded-xl border border-border-strong bg-surface/60 px-3 py-2.5 text-sm">
                 <MessageSquare className="h-4 w-4" />
@@ -185,10 +184,10 @@ function CandidateAnalyzerPage() {
 
 function StatusPill({ status }: { status: string }) {
   const map: Record<string, string> = {
-    "Top match": "bg-primary/15 text-primary",
-    Strong: "bg-success/15 text-success",
-    Review: "bg-warning/15 text-warning",
-    Consider: "bg-muted/40 text-muted-foreground",
+    "Mejor coincidencia": "bg-primary/15 text-primary",
+    Fuerte: "bg-success/15 text-success",
+    Revisar: "bg-warning/15 text-warning",
+    Considerar: "bg-muted/40 text-muted-foreground",
   };
   return <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${map[status]}`}>{status}</span>;
 }

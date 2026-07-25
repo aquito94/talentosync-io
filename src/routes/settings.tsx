@@ -6,10 +6,10 @@ import { User, Building2, KeyRound, Bell, CreditCard, Plug, Check, Shield } from
 export const Route = createFileRoute("/settings")({
   head: () => ({
     meta: [
-      { title: "Settings — RecruitAI OS" },
-      { name: "description", content: "Manage your workspace, team access, integrations and enterprise security controls." },
-      { property: "og:title", content: "Settings — RecruitAI OS" },
-      { property: "og:description", content: "Manage your workspace, team access, integrations and enterprise security controls." },
+      { title: "Configuración — RecruitAI OS" },
+      { name: "description", content: "Gestiona tu espacio de trabajo, accesos del equipo, integraciones y controles de seguridad empresarial." },
+      { property: "og:title", content: "Configuración — RecruitAI OS" },
+      { property: "og:description", content: "Gestiona tu espacio de trabajo, accesos del equipo, integraciones y controles de seguridad empresarial." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -18,32 +18,32 @@ export const Route = createFileRoute("/settings")({
 });
 
 const tabs = [
-  { icon: User, label: "Profile" },
-  { icon: Building2, label: "Organization" },
-  { icon: Plug, label: "Integrations" },
-  { icon: KeyRound, label: "Security" },
-  { icon: Bell, label: "Notifications" },
-  { icon: CreditCard, label: "Billing" },
+  { icon: User, label: "Perfil" },
+  { icon: Building2, label: "Organización" },
+  { icon: Plug, label: "Integraciones" },
+  { icon: KeyRound, label: "Seguridad" },
+  { icon: Bell, label: "Notificaciones" },
+  { icon: CreditCard, label: "Facturación" },
 ];
 
 const integrations = [
-  { name: "Slack", desc: "Send pipeline updates and copilot digests.", connected: true },
-  { name: "Google Workspace", desc: "Calendar, Gmail and Drive sync.", connected: true },
-  { name: "Greenhouse", desc: "Bi-directional ATS sync.", connected: true },
-  { name: "Lever", desc: "Import jobs and candidates.", connected: false },
-  { name: "LinkedIn Recruiter", desc: "Enrich profiles and outreach.", connected: false },
-  { name: "Workday", desc: "Enterprise HRIS integration.", connected: false },
+  { name: "Slack", desc: "Envía actualizaciones del pipeline y resúmenes del copiloto.", connected: true },
+  { name: "Google Workspace", desc: "Sincronización con Calendar, Gmail y Drive.", connected: true },
+  { name: "Greenhouse", desc: "Sincronización bidireccional con el ATS.", connected: true },
+  { name: "Lever", desc: "Importa vacantes y candidatos.", connected: false },
+  { name: "LinkedIn Recruiter", desc: "Enriquecimiento de perfiles y contacto.", connected: false },
+  { name: "Workday", desc: "Integración empresarial con HRIS.", connected: false },
 ];
 
 function SettingsPage() {
-  const [active, setActive] = useState("Profile");
+  const [active, setActive] = useState("Perfil");
 
   return (
     <AppShell>
       <div className="mx-auto w-full max-w-6xl px-6 py-8">
         <div className="animate-float-up">
-          <h1 className="text-3xl font-semibold tracking-tight">Settings</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Manage your workspace, security and integrations.</p>
+          <h1 className="text-3xl font-semibold tracking-tight">Configuración</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Gestiona tu espacio de trabajo, la seguridad y las integraciones.</p>
         </div>
 
         <div className="mt-8 grid gap-6 lg:grid-cols-[220px_1fr]">
@@ -64,12 +64,12 @@ function SettingsPage() {
           </aside>
 
           <section className="glass-panel rounded-2xl p-8">
-            {active === "Profile" && <ProfilePanel />}
-            {active === "Organization" && <OrgPanel />}
-            {active === "Integrations" && <IntegrationsPanel />}
-            {active === "Security" && <SecurityPanel />}
-            {active === "Notifications" && <NotificationsPanel />}
-            {active === "Billing" && <BillingPanel />}
+            {active === "Perfil" && <ProfilePanel />}
+            {active === "Organización" && <OrgPanel />}
+            {active === "Integraciones" && <IntegrationsPanel />}
+            {active === "Seguridad" && <SecurityPanel />}
+            {active === "Notificaciones" && <NotificationsPanel />}
+            {active === "Facturación" && <BillingPanel />}
           </section>
         </div>
       </div>
@@ -80,27 +80,27 @@ function SettingsPage() {
 function ProfilePanel() {
   return (
     <>
-      <h2 className="text-lg font-semibold">Profile</h2>
-      <p className="text-xs text-muted-foreground">Update your personal information.</p>
+      <h2 className="text-lg font-semibold">Perfil</h2>
+      <p className="text-xs text-muted-foreground">Actualiza tu información personal.</p>
 
       <div className="mt-6 flex items-center gap-5">
-        <div className="grid h-20 w-20 place-items-center rounded-2xl gradient-primary text-lg font-semibold text-white shadow-glow">AM</div>
+        <div className="grid h-20 w-20 place-items-center rounded-2xl gradient-primary text-lg font-semibold text-white shadow-glow">ÁM</div>
         <div>
-          <button className="rounded-xl border border-border-strong bg-surface/60 px-3 py-2 text-xs">Upload photo</button>
-          <p className="mt-2 text-[11px] text-muted-foreground">PNG or JPG · max 2MB</p>
+          <button className="rounded-xl border border-border-strong bg-surface/60 px-3 py-2 text-xs">Subir foto</button>
+          <p className="mt-2 text-[11px] text-muted-foreground">PNG o JPG · máx 2 MB</p>
         </div>
       </div>
 
       <div className="mt-8 grid gap-4 md:grid-cols-2">
-        <Input label="Full name" value="Alex Morán" />
-        <Input label="Email" value="alex@recruitai.com" />
-        <Input label="Job title" value="Head of Talent" />
-        <Input label="Timezone" value="Europe/Madrid" />
+        <Input label="Nombre completo" value="Álvaro Morán" />
+        <Input label="Correo electrónico" value="alvaro@recruitai.com" />
+        <Input label="Cargo" value="Director de Talento" />
+        <Input label="Zona horaria" value="Europe/Madrid" />
       </div>
 
       <div className="mt-8 flex justify-end gap-2 border-t border-border/60 pt-6">
-        <button className="rounded-xl border border-border-strong bg-surface/60 px-4 py-2 text-sm">Cancel</button>
-        <button className="rounded-xl gradient-primary px-4 py-2 text-sm font-semibold text-white shadow-glow">Save changes</button>
+        <button className="rounded-xl border border-border-strong bg-surface/60 px-4 py-2 text-sm">Cancelar</button>
+        <button className="rounded-xl gradient-primary px-4 py-2 text-sm font-semibold text-white shadow-glow">Guardar cambios</button>
       </div>
     </>
   );
@@ -109,13 +109,13 @@ function ProfilePanel() {
 function OrgPanel() {
   return (
     <>
-      <h2 className="text-lg font-semibold">Organization</h2>
-      <p className="text-xs text-muted-foreground">Configure your company workspace.</p>
+      <h2 className="text-lg font-semibold">Organización</h2>
+      <p className="text-xs text-muted-foreground">Configura el espacio de trabajo de tu empresa.</p>
       <div className="mt-6 grid gap-4 md:grid-cols-2">
-        <Input label="Company name" value="RecruitAI OS" />
-        <Input label="Website" value="recruitai.com" />
-        <Input label="Industry" value="Enterprise SaaS" />
-        <Input label="Team size" value="120" />
+        <Input label="Nombre de la empresa" value="RecruitAI OS" />
+        <Input label="Sitio web" value="recruitai.com" />
+        <Input label="Industria" value="SaaS empresarial" />
+        <Input label="Tamaño del equipo" value="120" />
       </div>
     </>
   );
@@ -124,8 +124,8 @@ function OrgPanel() {
 function IntegrationsPanel() {
   return (
     <>
-      <h2 className="text-lg font-semibold">Integrations</h2>
-      <p className="text-xs text-muted-foreground">Connect the tools your team already loves.</p>
+      <h2 className="text-lg font-semibold">Integraciones</h2>
+      <p className="text-xs text-muted-foreground">Conecta las herramientas que tu equipo ya utiliza.</p>
       <div className="mt-6 grid gap-3 md:grid-cols-2">
         {integrations.map((i) => (
           <div key={i.name} className="flex items-center gap-4 rounded-2xl border border-border-strong bg-surface/40 p-4">
@@ -135,12 +135,12 @@ function IntegrationsPanel() {
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-semibold">{i.name}</span>
-                {i.connected && <span className="rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-semibold text-success">Connected</span>}
+                {i.connected && <span className="rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-semibold text-success">Conectado</span>}
               </div>
               <p className="text-[11px] text-muted-foreground">{i.desc}</p>
             </div>
             <button className={`rounded-lg px-3 py-1.5 text-xs font-semibold ${i.connected ? "border border-border-strong bg-surface/60 text-foreground" : "gradient-primary text-white shadow-glow"}`}>
-              {i.connected ? "Manage" : "Connect"}
+              {i.connected ? "Gestionar" : "Conectar"}
             </button>
           </div>
         ))}
@@ -152,14 +152,14 @@ function IntegrationsPanel() {
 function SecurityPanel() {
   return (
     <>
-      <h2 className="text-lg font-semibold">Security</h2>
-      <p className="text-xs text-muted-foreground">Protect your workspace with enterprise-grade controls.</p>
+      <h2 className="text-lg font-semibold">Seguridad</h2>
+      <p className="text-xs text-muted-foreground">Protege tu espacio de trabajo con controles de nivel empresarial.</p>
       <div className="mt-6 space-y-3">
         {[
-          { icon: Shield, label: "Two-factor authentication", desc: "Required for all admins", on: true },
-          { icon: KeyRound, label: "SSO (SAML 2.0)", desc: "Okta · connected", on: true },
-          { icon: Check, label: "SCIM provisioning", desc: "Automated user lifecycle", on: false },
-          { icon: Shield, label: "Audit log streaming", desc: "Push to Datadog", on: true },
+          { icon: Shield, label: "Autenticación en dos pasos", desc: "Obligatoria para todos los administradores", on: true },
+          { icon: KeyRound, label: "Inicio de sesión único (SAML 2.0)", desc: "Okta · conectado", on: true },
+          { icon: Check, label: "Aprovisionamiento SCIM", desc: "Ciclo de vida de usuarios automatizado", on: false },
+          { icon: Shield, label: "Envío de registros de auditoría", desc: "Enviar a Datadog", on: true },
         ].map((r) => (
           <div key={r.label} className="flex items-center gap-4 rounded-2xl border border-border-strong bg-surface/40 p-4">
             <div className="grid h-10 w-10 place-items-center rounded-xl bg-surface-elevated text-primary">
@@ -180,10 +180,10 @@ function SecurityPanel() {
 function NotificationsPanel() {
   return (
     <>
-      <h2 className="text-lg font-semibold">Notifications</h2>
-      <p className="text-xs text-muted-foreground">Choose what lands in your inbox.</p>
+      <h2 className="text-lg font-semibold">Notificaciones</h2>
+      <p className="text-xs text-muted-foreground">Elige qué llega a tu bandeja de entrada.</p>
       <div className="mt-6 space-y-3">
-        {["New candidate matches", "Copilot suggestions", "Interview scheduled", "Weekly digest", "Product updates"].map((n, i) => (
+        {["Nuevas coincidencias de candidatos", "Sugerencias del Copiloto", "Entrevista agendada", "Resumen semanal", "Actualizaciones de producto"].map((n, i) => (
           <div key={n} className="flex items-center justify-between rounded-2xl border border-border-strong bg-surface/40 p-4">
             <div className="text-sm">{n}</div>
             <Toggle on={i < 3} />
@@ -197,21 +197,21 @@ function NotificationsPanel() {
 function BillingPanel() {
   return (
     <>
-      <h2 className="text-lg font-semibold">Billing</h2>
-      <p className="text-xs text-muted-foreground">Your plan, seats and invoices.</p>
+      <h2 className="text-lg font-semibold">Facturación</h2>
+      <p className="text-xs text-muted-foreground">Tu plan, licencias y facturas.</p>
       <div className="mt-6 rounded-2xl border border-border-strong bg-surface/40 p-6">
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Current plan</div>
-            <div className="mt-1 text-xl font-semibold gradient-text">Enterprise</div>
-            <div className="text-xs text-muted-foreground">120 seats · billed annually</div>
+            <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Plan actual</div>
+            <div className="mt-1 text-xl font-semibold gradient-text">Empresa</div>
+            <div className="text-xs text-muted-foreground">120 licencias · facturación anual</div>
           </div>
-          <button className="rounded-xl gradient-primary px-4 py-2 text-sm font-semibold text-white shadow-glow">Manage plan</button>
+          <button className="rounded-xl gradient-primary px-4 py-2 text-sm font-semibold text-white shadow-glow">Gestionar plan</button>
         </div>
         <div className="mt-6 grid gap-3 md:grid-cols-3">
-          <BillStat label="Seats used" value="98 / 120" />
-          <BillStat label="AI credits" value="18,240 / 25,000" />
-          <BillStat label="Next invoice" value="Jan 1, 2027" />
+          <BillStat label="Licencias en uso" value="98 / 120" />
+          <BillStat label="Créditos de IA" value="18.240 / 25.000" />
+          <BillStat label="Próxima factura" value="1 ene 2027" />
         </div>
       </div>
     </>

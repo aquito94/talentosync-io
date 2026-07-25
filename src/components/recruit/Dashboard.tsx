@@ -26,20 +26,20 @@ import {
 } from "lucide-react";
 
 const kpis = [
-  { label: "Candidatos activos", value: "1,248", delta: "+12.4%", up: true, icon: Users },
+  { label: "Candidatos activos", value: "1.248", delta: "+12,4%", up: true, icon: Users },
   { label: "Vacantes abiertas", value: "24", delta: "+3", up: true, icon: Briefcase },
-  { label: "AI Screening / día", value: "3,412", delta: "+28.9%", up: true, icon: Brain },
-  { label: "Time-to-hire", value: "11.2d", delta: "-18%", up: true, icon: Clock },
+  { label: "Evaluaciones IA / día", value: "3.412", delta: "+28,9%", up: true, icon: Brain },
+  { label: "Tiempo de contratación", value: "11,2d", delta: "-18%", up: true, icon: Clock },
 ];
 
 const pipeline = [
-  { m: "Ene", applied: 240, screened: 180, hired: 22 },
-  { m: "Feb", applied: 310, screened: 220, hired: 30 },
-  { m: "Mar", applied: 420, screened: 330, hired: 41 },
-  { m: "Abr", applied: 380, screened: 300, hired: 38 },
-  { m: "May", applied: 520, screened: 410, hired: 52 },
-  { m: "Jun", applied: 610, screened: 480, hired: 61 },
-  { m: "Jul", applied: 720, screened: 560, hired: 74 },
+  { m: "Ene", aplicaron: 240, evaluados: 180, contratados: 22 },
+  { m: "Feb", aplicaron: 310, evaluados: 220, contratados: 30 },
+  { m: "Mar", aplicaron: 420, evaluados: 330, contratados: 41 },
+  { m: "Abr", aplicaron: 380, evaluados: 300, contratados: 38 },
+  { m: "May", aplicaron: 520, evaluados: 410, contratados: 52 },
+  { m: "Jun", aplicaron: 610, evaluados: 480, contratados: 61 },
+  { m: "Jul", aplicaron: 720, evaluados: 560, contratados: 74 },
 ];
 
 const sources = [
@@ -51,25 +51,25 @@ const sources = [
 
 const funnel = [
   { stage: "Aplicaron", value: 4200 },
-  { stage: "IA screening", value: 2860 },
+  { stage: "Evaluación IA", value: 2860 },
   { stage: "Entrevista", value: 940 },
   { stage: "Oferta", value: 210 },
   { stage: "Contratados", value: 148 },
 ];
 
 const candidates = [
-  { name: "Laura Fernández", role: "Senior Product Designer", score: 96, stage: "Entrevista final", tag: "Top match" },
-  { name: "Marco Ríos", role: "Backend Engineer · Go", score: 92, stage: "Prueba técnica", tag: "Alto potencial" },
-  { name: "Priya Nair", role: "Data Scientist", score: 89, stage: "Entrevista IA", tag: "Nuevo" },
-  { name: "Julián Costa", role: "Growth Marketing Lead", score: 87, stage: "Screening", tag: "Referido" },
-  { name: "Sofía Álvarez", role: "Head of People", score: 84, stage: "Entrevista final", tag: "Executive" },
+  { name: "Laura Fernández", role: "Diseñadora de Producto Senior", score: 96, stage: "Entrevista final", tag: "Mejor coincidencia" },
+  { name: "Marco Ríos", role: "Ingeniero Backend · Go", score: 92, stage: "Prueba técnica", tag: "Alto potencial" },
+  { name: "Priya Nair", role: "Científica de Datos", score: 89, stage: "Entrevista con IA", tag: "Nuevo" },
+  { name: "Julián Costa", role: "Líder de Marketing de Crecimiento", score: 87, stage: "Evaluación", tag: "Referido" },
+  { name: "Sofía Álvarez", role: "Directora de Personas", score: 84, stage: "Entrevista final", tag: "Ejecutivo" },
 ];
 
 const activity = [
-  { icon: Brain, text: "IA descartó 128 CVs no calificados para Senior Backend", time: "hace 2 min", color: "text-chart-1" },
+  { icon: Brain, text: "La IA descartó 128 CVs no calificados para Backend Senior", time: "hace 2 min", color: "text-chart-1" },
   { icon: Video, text: "Entrevista automatizada completada por Priya Nair", time: "hace 14 min", color: "text-chart-3" },
-  { icon: MessageSquare, text: "Copiloto envió 42 mensajes de outreach personalizados", time: "hace 38 min", color: "text-chart-2" },
-  { icon: CheckCircle2, text: "Oferta aceptada por Laura Fernández (Product Design)", time: "hace 1 h", color: "text-success" },
+  { icon: MessageSquare, text: "El copiloto envió 42 mensajes de contacto personalizados", time: "hace 38 min", color: "text-chart-2" },
+  { icon: CheckCircle2, text: "Oferta aceptada por Laura Fernández (Diseño de Producto)", time: "hace 1 h", color: "text-success" },
 ];
 
 function TooltipBox({ active, payload, label }: any) {
@@ -101,14 +101,13 @@ export function Dashboard() {
           <div className="max-w-2xl">
             <div className="inline-flex items-center gap-2 rounded-full border border-border-strong bg-background/40 px-3 py-1 text-[11px] font-medium text-muted-foreground">
               <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
-              Copilot IA activo · 4 workflows corriendo
+              Copiloto IA activo · 4 flujos en ejecución
             </div>
             <h1 className="mt-4 text-3xl md:text-4xl font-semibold tracking-tight">
-              Buenos días, Alex.{" "}
-              <span className="gradient-text">Tu pipeline creció 28% esta semana.</span>
+              Bienvenido nuevamente, Álvaro.
             </h1>
             <p className="mt-3 text-sm text-muted-foreground">
-              El agente de RecruitAI evaluó 3,412 candidatos automáticamente y agendó 42 entrevistas mientras dormías.
+              Tu asistente inteligente para acelerar y optimizar cada proceso de reclutamiento.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -156,8 +155,8 @@ export function Dashboard() {
         <div className="xl:col-span-2 rounded-xl border border-border bg-card p-5">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-base font-semibold">Pipeline de contratación</h3>
-              <p className="text-xs text-muted-foreground">Aplicaciones vs. screening IA vs. contrataciones</p>
+              <h3 className="text-base font-semibold">Flujo de contratación</h3>
+              <p className="text-xs text-muted-foreground">Aplicaciones vs. evaluaciones IA vs. contrataciones</p>
             </div>
             <div className="flex items-center gap-2 text-[11px]">
               {["7D", "30D", "90D", "1A"].map((t, i) => (
@@ -193,9 +192,9 @@ export function Dashboard() {
                 <XAxis dataKey="m" stroke="var(--color-muted-foreground)" fontSize={11} tickLine={false} axisLine={false} />
                 <YAxis stroke="var(--color-muted-foreground)" fontSize={11} tickLine={false} axisLine={false} />
                 <Tooltip content={<TooltipBox />} cursor={{ stroke: "var(--color-border-strong)" }} />
-                <Area type="monotone" dataKey="applied" stroke="var(--color-chart-1)" strokeWidth={2} fill="url(#gApplied)" />
-                <Area type="monotone" dataKey="screened" stroke="var(--color-chart-2)" strokeWidth={2} fill="url(#gScreened)" />
-                <Area type="monotone" dataKey="hired" stroke="var(--color-chart-3)" strokeWidth={2} fill="url(#gHired)" />
+                <Area type="monotone" dataKey="aplicaron" stroke="var(--color-chart-1)" strokeWidth={2} fill="url(#gApplied)" />
+                <Area type="monotone" dataKey="evaluados" stroke="var(--color-chart-2)" strokeWidth={2} fill="url(#gScreened)" />
+                <Area type="monotone" dataKey="contratados" stroke="var(--color-chart-3)" strokeWidth={2} fill="url(#gHired)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -247,7 +246,7 @@ export function Dashboard() {
               <p className="text-xs text-muted-foreground">De aplicación a contratación</p>
             </div>
             <span className="rounded-full border border-primary/30 bg-primary/10 px-2.5 py-0.5 text-[11px] font-medium text-primary">
-              Tasa 3.52%
+              Tasa 3,52%
             </span>
           </div>
           <div className="mt-4 h-[260px]">
@@ -271,7 +270,7 @@ export function Dashboard() {
 
         <div className="rounded-xl border border-border bg-card p-5">
           <div className="flex items-center justify-between">
-            <h3 className="text-base font-semibold">Actividad del Copilot</h3>
+            <h3 className="text-base font-semibold">Actividad del Copiloto</h3>
             <span className="text-[11px] text-muted-foreground">En vivo</span>
           </div>
           <ul className="mt-4 space-y-4">
@@ -294,8 +293,8 @@ export function Dashboard() {
       <section className="rounded-xl border border-border bg-card">
         <div className="flex items-center justify-between border-b border-border p-5">
           <div>
-            <h3 className="text-base font-semibold">Top candidatos evaluados por IA</h3>
-            <p className="text-xs text-muted-foreground">Ranking automático basado en fit + skills + intención</p>
+            <h3 className="text-base font-semibold">Mejores candidatos evaluados por IA</h3>
+            <p className="text-xs text-muted-foreground">Ranking automático basado en ajuste + habilidades + intención</p>
           </div>
           <button className="text-xs font-medium text-primary hover:underline">Ver todos →</button>
         </div>
@@ -305,8 +304,8 @@ export function Dashboard() {
               <tr className="text-left text-[11px] uppercase tracking-wider text-muted-foreground">
                 <th className="px-5 py-3 font-medium">Candidato</th>
                 <th className="px-5 py-3 font-medium">Etapa</th>
-                <th className="px-5 py-3 font-medium">AI Score</th>
-                <th className="px-5 py-3 font-medium">Tag</th>
+                <th className="px-5 py-3 font-medium">Puntaje IA</th>
+                <th className="px-5 py-3 font-medium">Etiqueta</th>
                 <th className="px-5 py-3 font-medium text-right">Acción</th>
               </tr>
             </thead>
