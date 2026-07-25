@@ -305,7 +305,7 @@ function CopilotPage() {
           nivel: activeVacante.nivel ?? undefined,
           modalidad: activeVacante.modalidad ?? undefined,
           estado: activeVacante.estado ?? undefined,
-          resumen: activeVacante.resumen ?? undefined,
+          resumen: activeVacante.perfil_ideal ?? activeVacante.objetivo_cargo ?? undefined,
           descripcion: activeVacante.descripcion ?? undefined,
           competencias: activeVacante.competencias ?? undefined,
           updated_at: activeVacante.updated_at ?? undefined,
