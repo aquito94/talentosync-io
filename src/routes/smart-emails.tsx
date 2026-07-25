@@ -67,7 +67,7 @@ function SmartEmailsPage() {
         </aside>
 
         {/* List */}
-        <div className="w-full max-w-md shrink-0 border-r border-border/60 lg:w-[380px]">
+        <div className="hidden md:flex md:w-[300px] lg:w-[360px] shrink-0 flex-col border-r border-border/60 min-w-0">
           <div className="flex items-center gap-2 border-b border-border/60 px-4 py-3">
             <Search className="h-4 w-4 text-muted-foreground" />
             <input placeholder="Buscar en la bandeja…" className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground" />
