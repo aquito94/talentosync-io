@@ -37,8 +37,8 @@ function SmartEmailsPage() {
 
   return (
     <AppShell>
-      <div className="flex h-[calc(100vh-4rem)]">
-        <aside className="hidden md:flex w-60 shrink-0 flex-col border-r border-border/60 bg-sidebar/40 p-4">
+      <div className="flex h-[calc(100vh-4rem)] min-w-0">
+        <aside className="hidden lg:flex w-60 shrink-0 flex-col border-r border-border/60 bg-sidebar/40 p-4">
           <button className="flex items-center justify-center gap-2 rounded-xl gradient-primary py-2.5 text-sm font-semibold text-white shadow-glow">
             <Plus className="h-4 w-4" /> Redactar
           </button>
@@ -67,12 +67,12 @@ function SmartEmailsPage() {
         </aside>
 
         {/* List */}
-        <div className="w-full max-w-md shrink-0 border-r border-border/60 lg:w-[380px]">
+        <div className="hidden md:flex md:w-[300px] lg:w-[360px] shrink-0 flex-col border-r border-border/60 min-w-0">
           <div className="flex items-center gap-2 border-b border-border/60 px-4 py-3">
             <Search className="h-4 w-4 text-muted-foreground" />
             <input placeholder="Buscar en la bandeja…" className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground" />
           </div>
-          <ul className="overflow-y-auto">
+          <ul className="flex-1 overflow-y-auto">
             {emails.map((e, i) => (
               <li key={i}>
                 <button
@@ -97,17 +97,17 @@ function SmartEmailsPage() {
 
         {/* Reader */}
         <div className="flex min-w-0 flex-1 flex-col">
-          <div className="flex items-center gap-3 border-b border-border/60 px-6 py-4">
-            <div className="grid h-10 w-10 place-items-center rounded-xl gradient-primary text-sm font-semibold text-white shadow-glow">
+          <div className="flex flex-wrap items-center gap-3 border-b border-border/60 px-4 py-4 sm:px-6">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl gradient-primary text-sm font-semibold text-white shadow-glow">
               {emails[openId].from.split(" ").map((w) => w[0]).join("")}
             </div>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <div className="text-sm font-semibold truncate">{emails[openId].subject}</div>
-              <div className="text-xs text-muted-foreground">
+              <div className="text-xs text-muted-foreground truncate">
                 {emails[openId].from} · para Álvaro Morán · {emails[openId].when}
               </div>
             </div>
-            <div className="ml-auto flex gap-2">
+            <div className="flex shrink-0 gap-2">
               <button className="rounded-xl border border-border-strong bg-surface/60 px-3 py-1.5 text-xs">Responder</button>
               <button className="rounded-xl gradient-primary px-3 py-1.5 text-xs font-semibold text-white shadow-glow">
                 <Sparkles className="mr-1 inline h-3 w-3" /> Respuesta IA
@@ -136,7 +136,7 @@ function SmartEmailsPage() {
               <p className="mt-2 text-sm text-foreground/90">
                 Perfecto Elena — invitación enviada para el jueves a las 15:00 CET. Adjunté un breve documento de preparación con el roadmap y el equipo con el que trabajarías. ¡Nos vemos!
               </p>
-              <div className="mt-3 flex items-center gap-2">
+              <div className="mt-3 flex flex-wrap items-center gap-2">
                 <button className="rounded-lg gradient-primary px-3 py-1.5 text-xs font-semibold text-white shadow-glow">
                   <Send className="mr-1 inline h-3 w-3" /> Enviar ahora
                 </button>

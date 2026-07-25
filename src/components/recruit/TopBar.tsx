@@ -1,5 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Bell, ChevronDown, ChevronRight, Search, Sparkles } from "lucide-react";
+import { Bell, ChevronDown, ChevronRight, Menu, Search, Sparkles } from "lucide-react";
+import { useShell } from "./AppShell";
 
 const labels: Record<string, string> = {
   "": "Inicio",
@@ -16,50 +17,78 @@ export function TopBar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const segments = pathname.split("/").filter(Boolean);
   const current = segments.length === 0 ? "Inicio" : labels[segments[0]] ?? segments[0];
+  const { setMobileOpen } = useShell();
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-border/60 bg-background/70 px-6 backdrop-blur-xl">
+    <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border/60 bg-background/70 px-4 backdrop-blur-xl sm:gap-4 sm:px-6">
+      {/* Trigger móvil / tablet */}
+      <button
+        type="button"
+        onClick={() => setMobileOpen(true)}
+        aria-label="Abrir menú de navegación"
+        className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-border-strong bg-surface/60 text-muted-foreground transition hover:text-foreground lg:hidden"
+      >
+        <Menu className="h-4 w-4" />
+      </button>
+
       {/* Breadcrumbs */}
-      <nav className="hidden md:flex items-center gap-1.5 text-sm">
-        <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors">
+      <nav className="hidden min-w-0 lg:flex items-center gap-1.5 text-sm">
+        <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors shrink-0">
           RecruitAI OS
         </Link>
-        <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/60" />
-        <span className="font-medium text-foreground">{current}</span>
+        <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/60 shrink-0" />
+        <span className="font-medium text-foreground truncate">{current}</span>
       </nav>
 
+      {/* Título compacto en pantallas medias/pequeñas */}
+      <div className="min-w-0 flex-1 lg:hidden">
+        <div className="truncate text-sm font-semibold text-foreground">{current}</div>
+      </div>
+
       {/* Buscador global */}
-      <div className="ml-auto flex flex-1 max-w-md items-center gap-2 rounded-xl border border-border-strong bg-surface/60 px-3.5 py-2 text-sm text-muted-foreground transition focus-within:border-primary/60 focus-within:shadow-glow">
-        <Search className="h-4 w-4" />
+      <div className="hidden md:flex ml-auto min-w-0 flex-1 max-w-md items-center gap-2 rounded-xl border border-border-strong bg-surface/60 px-3.5 py-2 text-sm text-muted-foreground transition focus-within:border-primary/60 focus-within:shadow-glow">
+        <Search className="h-4 w-4 shrink-0" />
         <input
           type="text"
           placeholder="Buscar candidatos, vacantes, prompts…"
-          className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
+          className="min-w-0 flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
         />
-        <kbd className="rounded border border-border bg-background/60 px-1.5 py-0.5 text-[10px] font-medium">
+        <kbd className="hidden lg:inline-block rounded border border-border bg-background/60 px-1.5 py-0.5 text-[10px] font-medium">
           ⌘ K
         </kbd>
       </div>
 
+      {/* Search icon-only on small */}
+      <button
+        type="button"
+        aria-label="Buscar"
+        className="md:hidden ml-auto grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-border-strong bg-surface/60 text-muted-foreground transition hover:text-foreground"
+      >
+        <Search className="h-4 w-4" />
+      </button>
+
       <div className="flex items-center gap-2">
-        <button className="relative hidden md:grid h-9 w-9 place-items-center rounded-xl gradient-primary text-white shadow-glow animate-pulse-glow">
+        <button className="relative hidden lg:grid h-9 w-9 place-items-center rounded-xl gradient-primary text-white shadow-glow animate-pulse-glow">
           <Sparkles className="h-4 w-4" />
         </button>
 
-        <button className="relative grid h-9 w-9 place-items-center rounded-xl border border-border-strong bg-surface/60 text-muted-foreground transition hover:text-foreground">
+        <button
+          aria-label="Notificaciones"
+          className="relative grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-border-strong bg-surface/60 text-muted-foreground transition hover:text-foreground"
+        >
           <Bell className="h-4 w-4" />
           <span className="absolute top-2 right-2 h-1.5 w-1.5 rounded-full bg-primary shadow-glow" />
         </button>
 
-        <div className="ml-2 flex items-center gap-2.5 rounded-xl border border-border-strong bg-surface/60 px-2 py-1 pr-3 transition hover:bg-surface">
-          <div className="grid h-7 w-7 place-items-center rounded-lg gradient-primary text-xs font-semibold text-white">
+        <div className="ml-1 flex items-center gap-2.5 rounded-xl border border-border-strong bg-surface/60 px-2 py-1 pr-2 transition hover:bg-surface sm:pr-3">
+          <div className="grid h-7 w-7 shrink-0 place-items-center rounded-lg gradient-primary text-xs font-semibold text-white">
             ÁM
           </div>
-          <div className="hidden sm:block leading-tight">
-            <div className="text-xs font-semibold">Álvaro Morán</div>
-            <div className="text-[10px] text-muted-foreground">Director de Talento</div>
+          <div className="hidden xl:block leading-tight min-w-0">
+            <div className="text-xs font-semibold truncate">Álvaro Morán</div>
+            <div className="text-[10px] text-muted-foreground truncate">Director de Talento</div>
           </div>
-          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+          <ChevronDown className="hidden sm:block h-3.5 w-3.5 shrink-0 text-muted-foreground" />
         </div>
       </div>
     </header>
