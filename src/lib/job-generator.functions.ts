@@ -16,38 +16,35 @@ export const generateJobDescription = createServerFn({ method: "POST" })
     };
   })
   .handler(async ({ data }) => {
-    const apiKey = process.env.LOVABLE_API_KEY;
-    if (!apiKey) throw new Error("LOVABLE_API_KEY no está configurada");
+    const url = process.env.EXTERNAL_SUPABASE_URL;
+    const anonKey = process.env.EXTERNAL_SUPABASE_ANON_KEY;
+    if (!url || !anonKey) throw new Error("Supabase externo no está configurado");
 
-    const prompt = `Genera una descripción de vacante profesional en español para el siguiente cargo. Incluye: resumen, responsabilidades, requisitos y beneficios. Formato Markdown.
-
-Cargo: ${data.cargo}
-Empresa: ${data.empresa}
-Ciudad: ${data.ciudad}`;
-
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await fetch(`${url}/functions/v1/generate-job-description`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Lovable-API-Key": apiKey,
+        apikey: anonKey,
+        Authorization: `Bearer ${anonKey}`,
       },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: "Eres un experto en reclutamiento que redacta descripciones de vacantes de alta calidad." },
-          { role: "user", content: prompt },
-        ],
-      }),
+      body: JSON.stringify({ cargo: data.cargo, empresa: data.empresa, ciudad: data.ciudad }),
     });
 
     if (!response.ok) {
       const errorBody = await response.text();
-      if (response.status === 429) throw new Error("Límite de solicitudes alcanzado. Intenta más tarde.");
-      if (response.status === 402) throw new Error("Créditos de IA agotados. Agrega créditos en Ajustes.");
-      throw new Error(`Error del proveedor de IA [${response.status}]: ${errorBody}`);
+      throw new Error(`Edge Function [${response.status}]: ${errorBody}`);
     }
 
-    const result = await response.json();
-    const text = result?.choices?.[0]?.message?.content ?? "";
-    return { text };
+    const contentType = response.headers.get("content-type") ?? "";
+    if (contentType.includes("application/json")) {
+      const result = (await response.json()) as Record<string, unknown>;
+      const text =
+        (result.text as string | undefined) ??
+        (result.generatedText as string | undefined) ??
+        (result.content as string | undefined) ??
+        (result.message as string | undefined) ??
+        JSON.stringify(result, null, 2);
+      return { text };
+    }
+    return { text: await response.text() };
   });
