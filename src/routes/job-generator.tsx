@@ -336,7 +336,8 @@ function JobGeneratorPage() {
                   rows={4}
                   className={`${inputCls} resize-none`}
                   placeholder="Ej. Liderar la evolución de la plataforma de e-commerce, elevando la experiencia del usuario y la escalabilidad técnica."
-                  defaultValue="Liderar la evolución técnica de nuestra plataforma web, elevando la calidad de la experiencia y acelerando el time-to-market de nuevas funcionalidades."
+                  value={objetivoCargo}
+                  onChange={(e) => setObjetivoCargo(e.target.value)}
                 />
               </Field>
             </div>
