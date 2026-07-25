@@ -915,7 +915,23 @@ function JobGeneratorPage() {
   );
 }
 
+function MiniAction({ icon: Icon, label, onClick, danger }: { icon: React.ComponentType<{ className?: string }>; label: string; onClick?: () => void; danger?: boolean }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`inline-flex items-center justify-center gap-1 rounded-lg border px-2 py-1.5 text-[11px] font-semibold transition ${
+        danger
+          ? "border-destructive/40 bg-destructive/10 text-destructive hover:bg-destructive/20"
+          : "border-border-strong bg-surface/60 text-muted-foreground hover:border-primary/40 hover:text-foreground"
+      }`}
+    >
+      <Icon className="h-3 w-3" /> {label}
+    </button>
+  );
+}
+
 function ActionBtn({ icon: Icon, label, onClick, loading }: { icon: React.ComponentType<{ className?: string }>; label: string; onClick?: () => void; loading?: boolean }) {
+
   return (
     <button
       onClick={onClick}
