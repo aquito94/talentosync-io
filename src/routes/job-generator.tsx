@@ -501,8 +501,8 @@ function JobGeneratorPage() {
                     <FileText className="h-4 w-4 text-white" />
                   </div>
                   <div>
-                    <div className="text-sm font-semibold">Ingeniero Senior Frontend · Nova Retail Group</div>
-                    <div className="text-[11px] text-muted-foreground">Generado por Copiloto IA · Madrid, España · Híbrido</div>
+                    <div className="text-sm font-semibold">{cargo || "Vacante"} · {empresa || "Empresa"}</div>
+                    <div className="text-[11px] text-muted-foreground">Generado por Copiloto IA · {ciudad || "Ubicación"} · {modalidad}</div>
                   </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
