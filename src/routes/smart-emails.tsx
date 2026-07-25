@@ -97,17 +97,17 @@ function SmartEmailsPage() {
 
         {/* Reader */}
         <div className="flex min-w-0 flex-1 flex-col">
-          <div className="flex items-center gap-3 border-b border-border/60 px-6 py-4">
-            <div className="grid h-10 w-10 place-items-center rounded-xl gradient-primary text-sm font-semibold text-white shadow-glow">
+          <div className="flex flex-wrap items-center gap-3 border-b border-border/60 px-4 py-4 sm:px-6">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl gradient-primary text-sm font-semibold text-white shadow-glow">
               {emails[openId].from.split(" ").map((w) => w[0]).join("")}
             </div>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <div className="text-sm font-semibold truncate">{emails[openId].subject}</div>
-              <div className="text-xs text-muted-foreground">
+              <div className="text-xs text-muted-foreground truncate">
                 {emails[openId].from} · para Álvaro Morán · {emails[openId].when}
               </div>
             </div>
-            <div className="ml-auto flex gap-2">
+            <div className="flex shrink-0 gap-2">
               <button className="rounded-xl border border-border-strong bg-surface/60 px-3 py-1.5 text-xs">Responder</button>
               <button className="rounded-xl gradient-primary px-3 py-1.5 text-xs font-semibold text-white shadow-glow">
                 <Sparkles className="mr-1 inline h-3 w-3" /> Respuesta IA
