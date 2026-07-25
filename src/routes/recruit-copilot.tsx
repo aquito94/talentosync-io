@@ -70,11 +70,13 @@ type Vacante = {
   nivel: string | null;
   modalidad: string | null;
   estado: string | null;
-  resumen: string | null;
+  perfil_ideal: string | null;
   descripcion: string | null;
+  objetivo_cargo: string | null;
   competencias: string[] | null;
   updated_at: string | null;
 };
+
 type CandidatoCtx = {
   id: string;
   nombre: string;
