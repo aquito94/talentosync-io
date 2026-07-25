@@ -128,6 +128,10 @@ function JobGeneratorPage() {
   const [salarioMin, setSalarioMin] = useState("");
   const [salarioMax, setSalarioMax] = useState("");
   const [objetivoCargo, setObjetivoCargo] = useState("");
+  const [aiResponse, setAiResponse] = useState("");
+  const [aiError, setAiError] = useState("");
+  const callGenerateJob = useServerFn(generateJobDescription);
+
 
   const addChip = (value: string, list: string[], setList: (v: string[]) => void, setInput: (v: string) => void) => {
     const v = value.trim();
