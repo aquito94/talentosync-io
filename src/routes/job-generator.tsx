@@ -129,7 +129,7 @@ function JobGeneratorPage() {
   const [salarioMin, setSalarioMin] = useState("");
   const [salarioMax, setSalarioMax] = useState("");
   const [objetivoCargo, setObjetivoCargo] = useState("");
-  const [aiResponse, setAiResponse] = useState("");
+  const [vacancy, setVacancy] = useState<JobVacancy | null>(null);
   const [aiError, setAiError] = useState("");
   
 
@@ -149,10 +149,25 @@ function JobGeneratorPage() {
     setLoading(true);
     setGenerating(true);
     setAiError("");
-    setAiResponse("");
+    setVacancy(null);
     try {
-      const data = await invokeGenerate({ data: { cargo, empresa, ciudad } });
-      setAiResponse(data.text ?? "");
+      const data = await invokeGenerate({
+        data: {
+          cargo,
+          empresa,
+          ciudad,
+          departamento,
+          modalidad,
+          tipoContratacion,
+          nivel,
+          salarioMin,
+          salarioMax,
+          competencias: skills,
+          beneficios: benefits,
+          objetivoCargo,
+        },
+      });
+      setVacancy(data);
       setGenerated(true);
       setActiveTab("resumen");
     } catch (err) {
