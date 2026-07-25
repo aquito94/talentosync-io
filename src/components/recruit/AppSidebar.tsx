@@ -11,7 +11,14 @@ import {
   Sparkles,
 } from "lucide-react";
 
-const nav = [
+type NavItem = {
+  icon: typeof LayoutDashboard;
+  label: string;
+  to: string;
+  badge?: string;
+};
+
+const nav: NavItem[] = [
   { icon: LayoutDashboard, label: "Dashboard", to: "/" },
   { icon: FileText, label: "AI Job Generator", to: "/job-generator" },
   { icon: Users, label: "Candidate Analyzer", to: "/candidate-analyzer" },
@@ -19,7 +26,7 @@ const nav = [
   { icon: Mail, label: "Smart Emails", to: "/smart-emails" },
   { icon: BarChart3, label: "Analytics", to: "/analytics" },
   { icon: BookOpen, label: "Prompt Library", to: "/prompt-library" },
-] as const;
+];
 
 export function AppSidebar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
