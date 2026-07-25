@@ -147,8 +147,12 @@ function JobGeneratorPage() {
   const [objetivoCargo, setObjetivoCargo] = useState("");
   const [vacancy, setVacancy] = useState<JobVacancy | null>(null);
   const [aiError, setAiError] = useState("");
-  
 
+  const [savingId, setSavingId] = useState(false);
+  const [savedId, setSavedId] = useState<string | null>(null);
+  const [savedList, setSavedList] = useState<SavedVacancyRow[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
 
   const addChip = (value: string, list: string[], setList: (v: string[]) => void, setInput: (v: string) => void) => {
     const v = value.trim();
@@ -166,6 +170,7 @@ function JobGeneratorPage() {
     setGenerating(true);
     setAiError("");
     setVacancy(null);
+    setSavedId(null);
     try {
       const data = await invokeGenerate({
         data: {
@@ -187,7 +192,9 @@ function JobGeneratorPage() {
       setGenerated(true);
       setActiveTab("resumen");
     } catch (err) {
-      setAiError(err instanceof Error ? err.message : "Error al generar la vacante");
+      const msg = err instanceof Error ? err.message : "Error al generar la vacante";
+      setAiError(msg);
+      toast.error(msg);
     } finally {
       setGenerating(false);
       setLoading(false);
@@ -195,6 +202,226 @@ function JobGeneratorPage() {
   };
 
   const generarVacante = generateJob;
+
+  const meta: VacancyMeta = useMemo(() => ({
+    cargo: cargo || "Vacante",
+    empresa,
+    ciudad,
+    departamento,
+    modalidad,
+    tipoContratacion,
+    nivel,
+    salario: salarioMin || salarioMax ? `${salarioMin || "—"} a ${salarioMax || "—"}` : undefined,
+  }), [cargo, empresa, ciudad, departamento, modalidad, tipoContratacion, nivel, salarioMin, salarioMax]);
+
+  const ensureSession = useCallback(async () => {
+    const { data } = await supabase.auth.getSession();
+    if (data.session) return data.session;
+    const { data: anon, error } = await supabase.auth.signInAnonymously();
+    if (error) throw error;
+    return anon.session;
+  }, []);
+
+  const refreshHistory = useCallback(async () => {
+    setLoadingHistory(true);
+    try {
+      await ensureSession();
+      const { data, error } = await supabase
+        .from("vacantes")
+        .select("id, cargo, empresa, ciudad, modalidad, nivel, estado, updated_at, created_at, descripcion, responsabilidades, perfil_ideal, competencias, beneficios, kpis, preguntas_star, palabras_clave_ats, departamento, tipo_contratacion, salario_min, salario_max, objetivo_cargo, metadata")
+        .order("updated_at", { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      setSavedList((data as SavedVacancyRow[]) || []);
+    } catch (err) {
+      console.error(err);
+      toast.error("No se pudo cargar el historial");
+    } finally {
+      setLoadingHistory(false);
+    }
+  }, [ensureSession]);
+
+  useEffect(() => {
+    refreshHistory();
+  }, [refreshHistory]);
+
+  const handleSave = async () => {
+    if (!vacancy) return;
+    setSavingId(true);
+    try {
+      const session = await ensureSession();
+      if (!session) throw new Error("No hay sesión");
+      const row = {
+        user_id: session.user.id,
+        cargo: cargo || "Sin título",
+        empresa: empresa || "Sin empresa",
+        ciudad: ciudad || "",
+        departamento: departamento || null,
+        modalidad: MODALIDAD_TO_DB[modalidad] || null,
+        tipo_contratacion: TIPO_TO_DB[tipoContratacion] || null,
+        nivel: NIVEL_TO_DB[nivel] || null,
+        salario_min: parseNum(salarioMin),
+        salario_max: parseNum(salarioMax),
+        objetivo_cargo: objetivoCargo || null,
+        descripcion: vacancy.descripcion,
+        responsabilidades: vacancy.responsabilidades,
+        perfil_ideal: vacancy.perfil,
+        competencias: { ...vacancy.competencias, requeridas: skills },
+        beneficios: vacancy.beneficios.length ? vacancy.beneficios : benefits,
+        kpis: vacancy.kpis,
+        preguntas_star: vacancy.preguntasStar,
+        palabras_clave_ats: vacancy.palabrasAts,
+        metadata: { resumen: vacancy.resumen, ui: { modalidad, tipoContratacion, nivel } },
+      };
+      let id = savedId;
+      if (id) {
+        const { error } = await supabase.from("vacantes").update(row).eq("id", id);
+        if (error) throw error;
+        toast.success("Vacante actualizada");
+      } else {
+        const { data, error } = await supabase.from("vacantes").insert(row).select("id").single();
+        if (error) throw error;
+        id = data.id as string;
+        setSavedId(id);
+        toast.success("Vacante guardada");
+      }
+      refreshHistory();
+    } catch (err) {
+      console.error(err);
+      toast.error(err instanceof Error ? err.message : "No se pudo guardar la vacante");
+    } finally {
+      setSavingId(false);
+    }
+  };
+
+  const handleCopy = async () => {
+    if (!vacancy) return;
+    try {
+      const text = vacancyToPlainText(meta, vacancy);
+      await navigator.clipboard.writeText(text);
+      toast.success("Copiado al portapapeles");
+    } catch {
+      toast.error("No se pudo copiar");
+    }
+  };
+
+  const handleShare = async () => {
+    if (!vacancy) return;
+    const text = vacancyToPlainText(meta, vacancy);
+    const title = `Vacante · ${cargo || "RecruitAI OS"}`;
+    try {
+      if (typeof navigator !== "undefined" && (navigator as Navigator & { share?: (d: ShareData) => Promise<void> }).share) {
+        await (navigator as Navigator & { share: (d: ShareData) => Promise<void> }).share({ title, text });
+        return;
+      }
+      await navigator.clipboard.writeText(text);
+      toast.success("Contenido copiado — pégalo donde desees compartirlo");
+    } catch (err) {
+      if ((err as Error)?.name === "AbortError") return;
+      toast.error("No se pudo compartir");
+    }
+  };
+
+  const handleExportPDF = async () => {
+    if (!vacancy) return;
+    try {
+      await exportVacancyPDF(meta, vacancy);
+      toast.success("PDF generado");
+    } catch (err) {
+      console.error(err);
+      toast.error("No se pudo generar el PDF");
+    }
+  };
+
+  const handleExportDOCX = async () => {
+    if (!vacancy) return;
+    try {
+      await exportVacancyDOCX(meta, vacancy);
+      toast.success("Word generado");
+    } catch (err) {
+      console.error(err);
+      toast.error("No se pudo generar el Word");
+    }
+  };
+
+  const loadFromRow = (row: SavedVacancyRow, mode: "view" | "edit" | "duplicate") => {
+    setCargo(row.cargo || "");
+    setEmpresa(row.empresa || "");
+    setCiudad(row.ciudad || "");
+    setDepartamento(row.departamento || "Tecnología");
+    setModalidad(DB_TO_MODALIDAD[row.modalidad || ""] || "Híbrido");
+    setTipoContratacion(DB_TO_TIPO[row.tipo_contratacion || ""] || "Indefinido");
+    setNivel(DB_TO_NIVEL[row.nivel || ""] || "Senior");
+    setSalarioMin(row.salario_min ? String(row.salario_min) : "");
+    setSalarioMax(row.salario_max ? String(row.salario_max) : "");
+    setObjetivoCargo(row.objetivo_cargo || "");
+    const comp = (row.competencias || {}) as { tecnicas?: string[]; blandas?: string[]; requeridas?: string[] };
+    if (Array.isArray(comp.requeridas) && comp.requeridas.length) setSkills(comp.requeridas);
+    if (Array.isArray(row.beneficios) && row.beneficios.length) setBenefits(row.beneficios as string[]);
+    const perfil = (row.perfil_ideal || {}) as { debeTener?: string[]; deseable?: string[] };
+    const md = (row.metadata || {}) as { resumen?: string };
+    setVacancy({
+      resumen: md.resumen || "",
+      descripcion: row.descripcion || "",
+      responsabilidades: (row.responsabilidades as string[]) || [],
+      perfil: { debeTener: perfil.debeTener || [], deseable: perfil.deseable || [] },
+      competencias: { tecnicas: comp.tecnicas || [], blandas: comp.blandas || [] },
+      beneficios: (row.beneficios as string[]) || [],
+      kpis: (row.kpis as { nombre: string; meta: string }[]) || [],
+      preguntasStar: (row.preguntas_star as { categoria: string; pregunta: string }[]) || [],
+      palabrasAts: (row.palabras_clave_ats as string[]) || [],
+    });
+    setGenerated(true);
+    setActiveTab("resumen");
+    setSavedId(mode === "duplicate" ? null : row.id);
+    toast.success(mode === "view" ? "Vacante cargada" : mode === "edit" ? "Editando vacante" : "Duplicada — guarda para conservar los cambios");
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleDelete = async (id: string) => {
+    if (typeof window !== "undefined" && !window.confirm("¿Eliminar esta vacante?")) return;
+    try {
+      const { error } = await supabase.from("vacantes").delete().eq("id", id);
+      if (error) throw error;
+      if (savedId === id) setSavedId(null);
+      setSavedList((l) => l.filter((r) => r.id !== id));
+      toast.success("Vacante eliminada");
+    } catch (err) {
+      console.error(err);
+      toast.error("No se pudo eliminar");
+    }
+  };
+
+  const handleExportRow = async (row: SavedVacancyRow, kind: "pdf" | "docx") => {
+    const rowMeta: VacancyMeta = {
+      cargo: row.cargo,
+      empresa: row.empresa,
+      ciudad: row.ciudad || "",
+      departamento: row.departamento || undefined,
+      modalidad: DB_TO_MODALIDAD[row.modalidad || ""] || undefined,
+      tipoContratacion: DB_TO_TIPO[row.tipo_contratacion || ""] || undefined,
+      nivel: DB_TO_NIVEL[row.nivel || ""] || undefined,
+      salario: row.salario_min || row.salario_max ? `${row.salario_min || "—"} a ${row.salario_max || "—"}` : undefined,
+    };
+    const perfil = (row.perfil_ideal || {}) as { debeTener?: string[]; deseable?: string[] };
+    const comp = (row.competencias || {}) as { tecnicas?: string[]; blandas?: string[] };
+    const md = (row.metadata || {}) as { resumen?: string };
+    const v: JobVacancy = {
+      resumen: md.resumen || "",
+      descripcion: row.descripcion || "",
+      responsabilidades: (row.responsabilidades as string[]) || [],
+      perfil: { debeTener: perfil.debeTener || [], deseable: perfil.deseable || [] },
+      competencias: { tecnicas: comp.tecnicas || [], blandas: comp.blandas || [] },
+      beneficios: (row.beneficios as string[]) || [],
+      kpis: (row.kpis as { nombre: string; meta: string }[]) || [],
+      preguntasStar: (row.preguntas_star as { categoria: string; pregunta: string }[]) || [],
+      palabrasAts: (row.palabras_clave_ats as string[]) || [],
+    };
+    if (kind === "pdf") await exportVacancyPDF(rowMeta, v);
+    else await exportVacancyDOCX(rowMeta, v);
+  };
+
+
 
 
   return (
