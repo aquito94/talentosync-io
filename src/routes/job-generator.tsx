@@ -204,16 +204,16 @@ function JobGeneratorPage() {
 
             <div className="mt-6 grid gap-5 md:grid-cols-2">
               <Field label="Cargo" icon={Briefcase}>
-                <input className={inputCls} placeholder="Ej. Ingeniero Senior Frontend" defaultValue="Ingeniero Senior Frontend" />
+                <input className={inputCls} placeholder="Ej. Ingeniero Senior Frontend" value={cargo} onChange={(e) => setCargo(e.target.value)} />
               </Field>
               <Field label="Empresa" icon={Building2}>
-                <input className={inputCls} placeholder="Nombre de la empresa" defaultValue="Nova Retail Group" />
+                <input className={inputCls} placeholder="Nombre de la empresa" value={empresa} onChange={(e) => setEmpresa(e.target.value)} />
               </Field>
               <Field label="Ciudad" icon={MapPin}>
-                <input className={inputCls} placeholder="Ej. Madrid, España" defaultValue="Madrid, España" />
+                <input className={inputCls} placeholder="Ej. Madrid, España" value={ciudad} onChange={(e) => setCiudad(e.target.value)} />
               </Field>
               <Field label="Departamento" icon={Users}>
-                <select className={inputCls} defaultValue="Tecnología">
+                <select className={inputCls} value={departamento} onChange={(e) => setDepartamento(e.target.value)}>
                   <option>Tecnología</option>
                   <option>Producto</option>
                   <option>Diseño</option>
