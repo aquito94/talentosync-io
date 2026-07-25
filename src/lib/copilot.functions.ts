@@ -41,12 +41,13 @@ export const askCopilot = createServerFn({ method: "POST" })
     const messages = Array.isArray(d.messages) ? d.messages : [];
     return {
       messages: messages
-        .map((m) => ({
+        .map((m): CopilotMsg => ({
           role: m?.role === "assistant" ? "assistant" : "user",
           content: clampStr(m?.content, 8000),
         }))
         .filter((m) => m.content)
         .slice(-30),
+
       context: d.context ?? undefined,
     };
   })
