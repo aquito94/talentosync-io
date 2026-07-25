@@ -539,7 +539,7 @@ function JobGeneratorPage() {
 
               {/* Tab content */}
               <div className="p-6 md:p-8">
-                <TabContent id={activeTab} skills={skills} benefits={benefits} />
+                <TabContent id={activeTab} vacancy={vacancy} skills={skills} benefits={benefits} />
               </div>
             </div>
           )}
