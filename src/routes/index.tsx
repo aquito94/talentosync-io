@@ -12,11 +12,11 @@ export const Route = createFileRoute("/")({
         content:
           "RecruitAI OS es la plataforma enterprise de reclutamiento con IA: screening automatizado, entrevistas inteligentes y analytics de pipeline en tiempo real.",
       },
-      { property: "og:title", content: "RecruitAI OS — Enterprise AI Recruiting" },
+      { property: "og:title", content: "RecruitAI OS — Enterprise AI Recruiting Platform" },
       {
         property: "og:description",
         content:
-          "Automatiza selección, entrevistas y outreach con un copiloto de IA diseñado para equipos de talento de alto rendimiento.",
+          "RecruitAI OS es la plataforma enterprise de reclutamiento con IA: screening automatizado, entrevistas inteligentes y analytics de pipeline en tiempo real.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
