@@ -142,30 +142,26 @@ function JobGeneratorPage() {
   const removeChip = (value: string, list: string[], setList: (v: string[]) => void) =>
     setList(list.filter((s) => s !== value));
 
-  const generarVacante = async () => {
+  const generateJob = async () => {
     setLoading(true);
     setGenerating(true);
-    const jobData: JobData = {
-      cargo,
-      empresa,
-      ciudad,
-      departamento,
-      modalidad,
-      tipoContratacion,
-      nivel,
-      salario: salarioMin || salarioMax ? `${salarioMin} - ${salarioMax}` : "",
-      competencias: skills.join(", "),
-      beneficios: benefits.join(", "),
-      objetivoCargo,
-    };
-    console.log(jobData);
-    setTimeout(() => {
-      setGenerating(false);
-      setLoading(false);
+    setAiError("");
+    setAiResponse("");
+    try {
+      const result = await callGenerateJob({ data: { cargo, empresa, ciudad } });
+      setAiResponse(result.text);
       setGenerated(true);
       setActiveTab("resumen");
-    }, 1400);
+    } catch (err) {
+      setAiError(err instanceof Error ? err.message : "Error al generar la vacante");
+    } finally {
+      setGenerating(false);
+      setLoading(false);
+    }
   };
+
+  const generarVacante = generateJob;
+
 
   return (
     <AppShell>
