@@ -126,7 +126,7 @@
   --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.3);
   --shadow-md: 0 8px 24px -8px oklch(0 0 0 / 0.5);
   --shadow-lg: 0 20px 50px -12px oklch(0 0 0 / 0.55);
-  --shadow-glow: 0 0 40px -8px oklch(0.66 0.24 295 / 0.55);
+  --shadow-glow: 0 0 40px -8px oklch(0.55 0.22 264 / 0.55);
   --shadow-inner-glow: inset 0 1px 0 0 oklch(1 0 0 / 0.06);
 
   --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
