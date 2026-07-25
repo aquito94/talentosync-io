@@ -110,15 +110,6 @@ export function Dashboard() {
               Tu asistente inteligente para acelerar y optimizar cada proceso de reclutamiento.
             </p>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <button className="rounded-lg border border-border-strong bg-surface/70 px-4 py-2 text-sm font-medium transition hover:bg-surface">
-              Ver reporte
-            </button>
-            <button className="inline-flex items-center gap-2 rounded-lg gradient-primary px-4 py-2 text-sm font-semibold text-white shadow-glow transition hover:brightness-110">
-              <Sparkles className="h-4 w-4" />
-              Nueva vacante con IA
-            </button>
-          </div>
         </div>
       </section>
 
