@@ -212,8 +212,8 @@
   to { opacity: 1; transform: translateY(0); }
 }
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 0 0 oklch(0.66 0.24 295 / 0.4); }
-  50% { box-shadow: 0 0 0 12px oklch(0.66 0.24 295 / 0); }
+  0%, 100% { box-shadow: 0 0 0 0 oklch(0.55 0.22 264 / 0.45); }
+  50% { box-shadow: 0 0 0 12px oklch(0.55 0.22 264 / 0); }
 }
 
 @utility animate-float-up {
