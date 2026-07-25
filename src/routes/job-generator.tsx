@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
-import { generateJobDescription } from "@/lib/job-generator.functions";
+import { supabase } from "@/integrations/supabase/client";
+
 import {
   Sparkles,
   Wand2,
