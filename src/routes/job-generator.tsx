@@ -1,6 +1,14 @@
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { generateJobDescription, type JobVacancy } from "@/lib/job-generator.functions";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import {
+  exportVacancyPDF,
+  exportVacancyDOCX,
+  vacancyToPlainText,
+  type VacancyMeta,
+} from "@/lib/vacancy-export";
 
 import {
   Sparkles,
@@ -30,9 +38,17 @@ import {
   ArrowRight,
   Plus,
   X,
+  Share2,
+  Eye,
+  Pencil,
+  Copy as CopyIcon,
+  Trash2,
+  History,
+  Loader2,
 } from "lucide-react";
 import { AppShell } from "@/components/recruit/AppShell";
 import { createFileRoute } from "@tanstack/react-router";
+
 
 export const Route = createFileRoute("/job-generator")({
   head: () => ({
