@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
-import { generateJobDescription } from "@/lib/job-generator.functions";
+import { supabase } from "@/integrations/supabase/client";
+
 import {
   Sparkles,
   Wand2,
@@ -130,7 +130,7 @@ function JobGeneratorPage() {
   const [objetivoCargo, setObjetivoCargo] = useState("");
   const [aiResponse, setAiResponse] = useState("");
   const [aiError, setAiError] = useState("");
-  const callGenerateJob = useServerFn(generateJobDescription);
+  
 
 
   const addChip = (value: string, list: string[], setList: (v: string[]) => void, setInput: (v: string) => void) => {
@@ -148,8 +148,17 @@ function JobGeneratorPage() {
     setAiError("");
     setAiResponse("");
     try {
-      const result = await callGenerateJob({ data: { cargo, empresa, ciudad } });
-      setAiResponse(result.text);
+      const { data, error } = await supabase.functions.invoke("generate-job-description", {
+        body: { cargo, empresa, ciudad },
+      });
+      if (error) throw error;
+      const text =
+        (data as { text?: string; generatedText?: string; content?: string } | null)?.text ??
+        (data as { generatedText?: string } | null)?.generatedText ??
+        (data as { content?: string } | null)?.content ??
+        (typeof data === "string" ? data : JSON.stringify(data, null, 2));
+      setAiResponse(text);
+
       setGenerated(true);
       setActiveTab("resumen");
     } catch (err) {
