@@ -313,12 +313,8 @@ function JobGeneratorPage() {
           resumen: vacancy.resumen,
           competencias_detalle: vacancy.competencias,
           ui: { modalidad, tipoContratacion, nivel },
-        },
+      } as never;
 
-        preguntas_star: vacancy.preguntasStar,
-        palabras_clave_ats: vacancy.palabrasAts,
-        metadata: { resumen: vacancy.resumen, ui: { modalidad, tipoContratacion, nivel } },
-      };
       let id = savedId;
       if (id) {
         const { error } = await supabase.from("vacantes").update(row).eq("id", id);
