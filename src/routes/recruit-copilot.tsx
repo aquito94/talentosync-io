@@ -172,7 +172,7 @@ function CopilotPage() {
     (async () => {
       const { data, error } = await supabase
         .from("vacantes")
-        .select("id, cargo, empresa, ciudad, nivel, modalidad, estado, resumen, descripcion, competencias, updated_at")
+        .select("id, cargo, empresa, ciudad, nivel, modalidad, estado, perfil_ideal, descripcion, objetivo_cargo, competencias, updated_at")
         .order("updated_at", { ascending: false })
         .limit(50);
       if (error) {
