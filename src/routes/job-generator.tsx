@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { generateJobDescription } from "@/lib/job-generator.functions";
 import {
   Sparkles,
   Wand2,
@@ -126,6 +128,10 @@ function JobGeneratorPage() {
   const [salarioMin, setSalarioMin] = useState("");
   const [salarioMax, setSalarioMax] = useState("");
   const [objetivoCargo, setObjetivoCargo] = useState("");
+  const [aiResponse, setAiResponse] = useState("");
+  const [aiError, setAiError] = useState("");
+  const callGenerateJob = useServerFn(generateJobDescription);
+
 
   const addChip = (value: string, list: string[], setList: (v: string[]) => void, setInput: (v: string) => void) => {
     const v = value.trim();
@@ -136,30 +142,26 @@ function JobGeneratorPage() {
   const removeChip = (value: string, list: string[], setList: (v: string[]) => void) =>
     setList(list.filter((s) => s !== value));
 
-  const generarVacante = async () => {
+  const generateJob = async () => {
     setLoading(true);
     setGenerating(true);
-    const jobData: JobData = {
-      cargo,
-      empresa,
-      ciudad,
-      departamento,
-      modalidad,
-      tipoContratacion,
-      nivel,
-      salario: salarioMin || salarioMax ? `${salarioMin} - ${salarioMax}` : "",
-      competencias: skills.join(", "),
-      beneficios: benefits.join(", "),
-      objetivoCargo,
-    };
-    console.log(jobData);
-    setTimeout(() => {
-      setGenerating(false);
-      setLoading(false);
+    setAiError("");
+    setAiResponse("");
+    try {
+      const result = await callGenerateJob({ data: { cargo, empresa, ciudad } });
+      setAiResponse(result.text);
       setGenerated(true);
       setActiveTab("resumen");
-    }, 1400);
+    } catch (err) {
+      setAiError(err instanceof Error ? err.message : "Error al generar la vacante");
+    } finally {
+      setGenerating(false);
+      setLoading(false);
+    }
   };
+
+  const generarVacante = generateJob;
+
 
   return (
     <AppShell>
@@ -367,7 +369,24 @@ function JobGeneratorPage() {
                 )}
               </button>
             </div>
+
+            {(aiResponse || aiError) && (
+              <div className="mt-6 rounded-2xl border border-border-strong bg-surface/60 p-5">
+                <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-primary">
+                  <Sparkles className="h-3.5 w-3.5" />
+                  Respuesta de Gemini
+                </div>
+                {aiError ? (
+                  <p className="text-sm text-destructive">{aiError}</p>
+                ) : (
+                  <pre className="whitespace-pre-wrap break-words font-sans text-sm leading-relaxed text-foreground">
+                    {aiResponse}
+                  </pre>
+                )}
+              </div>
+            )}
           </section>
+
 
           {/* RIGHT: Copilot */}
           <aside className="space-y-4">
