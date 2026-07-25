@@ -190,7 +190,7 @@ function JobGeneratorPage() {
   const [savedId, setSavedId] = useState<string | null>(null);
   const [savedList, setSavedList] = useState<SavedVacancyRow[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
-  const [showHistory, setShowHistory] = useState(false);
+  
 
   const addChip = (value: string, list: string[], setList: (v: string[]) => void, setInput: (v: string) => void) => {
     const v = value.trim();
