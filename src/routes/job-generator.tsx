@@ -490,7 +490,7 @@ function JobGeneratorPage() {
             </button>
             <button
               onClick={() => {
-                setShowHistory(true);
+                
                 refreshHistory();
                 setTimeout(() => document.getElementById("vacantes-guardadas")?.scrollIntoView({ behavior: "smooth" }), 50);
               }}
