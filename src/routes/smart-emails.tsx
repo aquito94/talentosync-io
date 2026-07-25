@@ -37,8 +37,8 @@ function SmartEmailsPage() {
 
   return (
     <AppShell>
-      <div className="flex h-[calc(100vh-4rem)]">
-        <aside className="hidden md:flex w-60 shrink-0 flex-col border-r border-border/60 bg-sidebar/40 p-4">
+      <div className="flex h-[calc(100vh-4rem)] min-w-0">
+        <aside className="hidden lg:flex w-60 shrink-0 flex-col border-r border-border/60 bg-sidebar/40 p-4">
           <button className="flex items-center justify-center gap-2 rounded-xl gradient-primary py-2.5 text-sm font-semibold text-white shadow-glow">
             <Plus className="h-4 w-4" /> Redactar
           </button>
