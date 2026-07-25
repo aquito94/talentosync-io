@@ -92,6 +92,20 @@ const tabs = [
 
 type TabId = (typeof tabs)[number]["id"];
 
+type JobData = {
+  cargo: string;
+  empresa: string;
+  ciudad: string;
+  departamento: string;
+  modalidad: string;
+  tipoContratacion: string;
+  nivel: string;
+  salario: string;
+  competencias: string;
+  beneficios: string;
+  objetivoCargo: string;
+};
+
 function JobGeneratorPage() {
   const [skills, setSkills] = useState<string[]>(["React", "TypeScript", "GraphQL", "AWS"]);
   const [benefits, setBenefits] = useState<string[]>(["Seguro médico premium", "Trabajo remoto", "Bono anual"]);
@@ -99,7 +113,19 @@ function JobGeneratorPage() {
   const [benefitInput, setBenefitInput] = useState("");
   const [generated, setGenerated] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>("resumen");
+
+  const [cargo, setCargo] = useState("");
+  const [empresa, setEmpresa] = useState("");
+  const [ciudad, setCiudad] = useState("");
+  const [departamento, setDepartamento] = useState("Tecnología");
+  const [modalidad, setModalidad] = useState("Híbrido");
+  const [tipoContratacion, setTipoContratacion] = useState("Indefinido");
+  const [nivel, setNivel] = useState("Senior");
+  const [salarioMin, setSalarioMin] = useState("");
+  const [salarioMax, setSalarioMax] = useState("");
+  const [objetivoCargo, setObjetivoCargo] = useState("");
 
   const addChip = (value: string, list: string[], setList: (v: string[]) => void, setInput: (v: string) => void) => {
     const v = value.trim();
@@ -110,10 +136,26 @@ function JobGeneratorPage() {
   const removeChip = (value: string, list: string[], setList: (v: string[]) => void) =>
     setList(list.filter((s) => s !== value));
 
-  const handleGenerate = () => {
+  const generarVacante = async () => {
+    setLoading(true);
     setGenerating(true);
+    const jobData: JobData = {
+      cargo,
+      empresa,
+      ciudad,
+      departamento,
+      modalidad,
+      tipoContratacion,
+      nivel,
+      salario: salarioMin || salarioMax ? `${salarioMin} - ${salarioMax}` : "",
+      competencias: skills.join(", "),
+      beneficios: benefits.join(", "),
+      objetivoCargo,
+    };
+    console.log(jobData);
     setTimeout(() => {
       setGenerating(false);
+      setLoading(false);
       setGenerated(true);
       setActiveTab("resumen");
     }, 1400);
@@ -162,16 +204,16 @@ function JobGeneratorPage() {
 
             <div className="mt-6 grid gap-5 md:grid-cols-2">
               <Field label="Cargo" icon={Briefcase}>
-                <input className={inputCls} placeholder="Ej. Ingeniero Senior Frontend" defaultValue="Ingeniero Senior Frontend" />
+                <input className={inputCls} placeholder="Ej. Ingeniero Senior Frontend" value={cargo} onChange={(e) => setCargo(e.target.value)} />
               </Field>
               <Field label="Empresa" icon={Building2}>
-                <input className={inputCls} placeholder="Nombre de la empresa" defaultValue="Nova Retail Group" />
+                <input className={inputCls} placeholder="Nombre de la empresa" value={empresa} onChange={(e) => setEmpresa(e.target.value)} />
               </Field>
               <Field label="Ciudad" icon={MapPin}>
-                <input className={inputCls} placeholder="Ej. Madrid, España" defaultValue="Madrid, España" />
+                <input className={inputCls} placeholder="Ej. Madrid, España" value={ciudad} onChange={(e) => setCiudad(e.target.value)} />
               </Field>
               <Field label="Departamento" icon={Users}>
-                <select className={inputCls} defaultValue="Tecnología">
+                <select className={inputCls} value={departamento} onChange={(e) => setDepartamento(e.target.value)}>
                   <option>Tecnología</option>
                   <option>Producto</option>
                   <option>Diseño</option>
@@ -183,11 +225,13 @@ function JobGeneratorPage() {
               </Field>
               <Field label="Modalidad" icon={Zap}>
                 <div className="grid grid-cols-3 gap-2">
-                  {["Remoto", "Híbrido", "Presencial"].map((m, i) => (
+                  {["Remoto", "Híbrido", "Presencial"].map((m) => (
                     <button
                       key={m}
+                      type="button"
+                      onClick={() => setModalidad(m)}
                       className={`rounded-xl border px-3 py-2 text-xs font-semibold transition ${
-                        i === 1
+                        modalidad === m
                           ? "border-primary/60 bg-primary/15 text-foreground shadow-glow"
                           : "border-border-strong bg-surface/60 text-muted-foreground hover:text-foreground"
                       }`}
@@ -198,7 +242,7 @@ function JobGeneratorPage() {
                 </div>
               </Field>
               <Field label="Tipo de contratación" icon={FileType2}>
-                <select className={inputCls} defaultValue="Indefinido">
+                <select className={inputCls} value={tipoContratacion} onChange={(e) => setTipoContratacion(e.target.value)}>
                   <option>Indefinido</option>
                   <option>Temporal</option>
                   <option>Por proyecto</option>
@@ -208,11 +252,13 @@ function JobGeneratorPage() {
               </Field>
               <Field label="Nivel" icon={Layers}>
                 <div className="grid grid-cols-4 gap-2">
-                  {["Junior", "Semi", "Senior", "Lead"].map((n, i) => (
+                  {["Junior", "Semi", "Senior", "Lead"].map((n) => (
                     <button
                       key={n}
+                      type="button"
+                      onClick={() => setNivel(n)}
                       className={`rounded-xl border px-2.5 py-2 text-xs font-semibold transition ${
-                        i === 2
+                        nivel === n
                           ? "border-primary/60 bg-primary/15 text-foreground shadow-glow"
                           : "border-border-strong bg-surface/60 text-muted-foreground hover:text-foreground"
                       }`}
@@ -224,9 +270,9 @@ function JobGeneratorPage() {
               </Field>
               <Field label="Rango salarial" icon={DollarSign} hint="Anual bruto, en la moneda local.">
                 <div className="flex items-center gap-2">
-                  <input className={inputCls} placeholder="Mínimo" defaultValue="45.000 €" />
+                  <input className={inputCls} placeholder="Mínimo" value={salarioMin} onChange={(e) => setSalarioMin(e.target.value)} />
                   <span className="text-muted-foreground">—</span>
-                  <input className={inputCls} placeholder="Máximo" defaultValue="65.000 €" />
+                  <input className={inputCls} placeholder="Máximo" value={salarioMax} onChange={(e) => setSalarioMax(e.target.value)} />
                 </div>
               </Field>
 
@@ -290,7 +336,8 @@ function JobGeneratorPage() {
                   rows={4}
                   className={`${inputCls} resize-none`}
                   placeholder="Ej. Liderar la evolución de la plataforma de e-commerce, elevando la experiencia del usuario y la escalabilidad técnica."
-                  defaultValue="Liderar la evolución técnica de nuestra plataforma web, elevando la calidad de la experiencia y acelerando el time-to-market de nuevas funcionalidades."
+                  value={objetivoCargo}
+                  onChange={(e) => setObjetivoCargo(e.target.value)}
                 />
               </Field>
             </div>
@@ -302,14 +349,14 @@ function JobGeneratorPage() {
                 Listo para generar · 11 campos completados
               </div>
               <button
-                onClick={handleGenerate}
-                disabled={generating}
+                onClick={generarVacante}
+                disabled={loading}
                 className="group relative inline-flex items-center justify-center gap-2 rounded-2xl gradient-primary px-6 py-3.5 text-sm font-semibold text-white shadow-glow transition hover:brightness-110 disabled:opacity-70"
               >
-                {generating ? (
+                {loading ? (
                   <>
                     <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
-                    Generando vacante…
+                    Generando...
                   </>
                 ) : (
                   <>
