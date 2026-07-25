@@ -10,6 +10,8 @@ import {
   Settings,
   Sparkles,
 } from "lucide-react";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { useShell } from "./AppShell";
 
 type NavItem = {
   icon: typeof LayoutDashboard;
@@ -28,25 +30,25 @@ const nav: NavItem[] = [
   { icon: BookOpen, label: "Biblioteca de Prompts", to: "/prompt-library" },
 ];
 
-export function AppSidebar() {
+function SidebarInner({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isActive = (to: string) => (to === "/" ? pathname === "/" : pathname.startsWith(to));
 
   return (
-    <aside className="hidden lg:flex w-[260px] shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
-      <div className="flex h-16 items-center gap-3 px-6">
+    <div className="flex h-full flex-col">
+      <div className="flex h-16 items-center gap-3 px-6 shrink-0">
         <div className="relative grid h-9 w-9 place-items-center rounded-xl gradient-primary shadow-glow">
           <Sparkles className="h-4 w-4 text-white" strokeWidth={2.5} />
         </div>
         <div className="min-w-0">
-          <div className="text-sm font-semibold tracking-tight">RecruitAI OS</div>
+          <div className="text-sm font-semibold tracking-tight truncate">RecruitAI OS</div>
           <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
             Empresa
           </div>
         </div>
       </div>
 
-      <nav className="mt-4 flex-1 px-3">
+      <nav className="mt-4 flex-1 overflow-y-auto px-3">
         <div className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
           Espacio de trabajo
         </div>
@@ -57,6 +59,7 @@ export function AppSidebar() {
               <li key={item.label}>
                 <Link
                   to={item.to}
+                  onClick={onNavigate}
                   className={`group relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-200 ${
                     active
                       ? "bg-sidebar-accent text-sidebar-accent-foreground"
@@ -74,9 +77,9 @@ export function AppSidebar() {
                     }`}
                     strokeWidth={1.75}
                   />
-                  <span className="flex-1 truncate text-left font-medium">{item.label}</span>
+                  <span className="flex-1 min-w-0 truncate text-left font-medium">{item.label}</span>
                   {item.badge && (
-                    <span className="rounded-md gradient-primary px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white shadow-glow">
+                    <span className="shrink-0 rounded-md gradient-primary px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white shadow-glow">
                       {item.badge}
                     </span>
                   )}
@@ -93,6 +96,7 @@ export function AppSidebar() {
           <li>
             <Link
               to="/settings"
+              onClick={onNavigate}
               className={`group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all ${
                 isActive("/settings")
                   ? "bg-sidebar-accent text-sidebar-accent-foreground"
@@ -100,7 +104,7 @@ export function AppSidebar() {
               }`}
             >
               <Settings
-                className={`h-[18px] w-[18px] ${
+                className={`h-[18px] w-[18px] shrink-0 ${
                   isActive("/settings")
                     ? "text-primary"
                     : "text-sidebar-foreground/55 group-hover:text-primary"
@@ -113,13 +117,13 @@ export function AppSidebar() {
         </ul>
       </nav>
 
-      <div className="p-4">
+      <div className="p-4 shrink-0">
         <div className="glass-panel relative overflow-hidden rounded-2xl p-4">
           <div className="absolute inset-0 opacity-50" style={{ background: "var(--gradient-hero)" }} />
           <div className="relative">
             <div className="flex items-center gap-2 text-xs font-semibold">
-              <Sparkles className="h-3.5 w-3.5 text-primary" />
-              <span>Créditos de IA</span>
+              <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" />
+              <span className="truncate">Créditos de IA</span>
             </div>
             <div className="mt-2 text-2xl font-semibold tracking-tight">18.240</div>
             <div className="mt-1 text-[11px] text-muted-foreground">de 25.000 este mes</div>
@@ -132,6 +136,25 @@ export function AppSidebar() {
           </div>
         </div>
       </div>
-    </aside>
+    </div>
+  );
+}
+
+export function AppSidebar() {
+  const { mobileOpen, setMobileOpen } = useShell();
+  return (
+    <>
+      <aside className="hidden lg:flex w-[260px] shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
+        <SidebarInner />
+      </aside>
+      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+        <SheetContent
+          side="left"
+          className="w-[280px] max-w-[85vw] border-r border-sidebar-border bg-sidebar p-0 text-sidebar-foreground lg:hidden"
+        >
+          <SidebarInner onNavigate={() => setMobileOpen(false)} />
+        </SheetContent>
+      </Sheet>
+    </>
   );
 }
