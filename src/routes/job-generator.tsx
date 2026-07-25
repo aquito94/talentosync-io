@@ -841,8 +841,77 @@ function JobGeneratorPage() {
             </div>
           )}
         </section>
+
+        {/* HISTORIAL */}
+        <section id="vacantes-guardadas" className="mt-10">
+          <div className="mb-4 flex items-end justify-between">
+            <div>
+              <h2 className="text-xl font-semibold tracking-tight">Vacantes guardadas</h2>
+              <p className="text-xs text-muted-foreground">Todas las vacantes generadas y guardadas en tu cuenta.</p>
+            </div>
+            <button
+              onClick={refreshHistory}
+              className="rounded-xl border border-border-strong bg-surface/60 px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground"
+            >
+              Actualizar
+            </button>
+          </div>
+
+          {loadingHistory ? (
+            <div className="glass-panel grid place-items-center rounded-2xl py-16 text-sm text-muted-foreground">
+              <Loader2 className="mb-2 h-5 w-5 animate-spin text-primary" />
+              Cargando historial…
+            </div>
+          ) : savedList.length === 0 ? (
+            <div className="glass-panel rounded-2xl px-6 py-14 text-center">
+              <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-primary/15 text-primary">
+                <History className="h-5 w-5" />
+              </div>
+              <p className="mt-3 text-sm font-semibold">Aún no tienes vacantes guardadas</p>
+              <p className="mt-1 text-xs text-muted-foreground">Genera una vacante y pulsa “Guardar” para verla aquí.</p>
+            </div>
+          ) : (
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {savedList.map((row) => (
+                <article
+                  key={row.id}
+                  className={`glass-panel group rounded-2xl p-4 transition hover:border-primary/40 ${savedId === row.id ? "ring-1 ring-primary/60" : ""}`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <h3 className="truncate text-sm font-semibold">{row.cargo}</h3>
+                      <p className="truncate text-[11px] text-muted-foreground">
+                        {row.empresa}{row.ciudad ? ` · ${row.ciudad}` : ""}
+                      </p>
+                    </div>
+                    <span className="shrink-0 rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary">
+                      {row.estado || "borrador"}
+                    </span>
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-1.5 text-[10px] text-muted-foreground">
+                    {row.modalidad && <span className="rounded-md bg-surface/70 px-2 py-0.5">{DB_TO_MODALIDAD[row.modalidad] || row.modalidad}</span>}
+                    {row.nivel && <span className="rounded-md bg-surface/70 px-2 py-0.5">{DB_TO_NIVEL[row.nivel] || row.nivel}</span>}
+                    {row.tipo_contratacion && <span className="rounded-md bg-surface/70 px-2 py-0.5">{DB_TO_TIPO[row.tipo_contratacion] || row.tipo_contratacion}</span>}
+                  </div>
+                  <p className="mt-3 text-[11px] text-muted-foreground">
+                    Actualizada {new Date(row.updated_at).toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" })}
+                  </p>
+                  <div className="mt-4 grid grid-cols-3 gap-1.5">
+                    <MiniAction icon={Eye} label="Ver" onClick={() => loadFromRow(row, "view")} />
+                    <MiniAction icon={Pencil} label="Editar" onClick={() => loadFromRow(row, "edit")} />
+                    <MiniAction icon={CopyIcon} label="Duplicar" onClick={() => loadFromRow(row, "duplicate")} />
+                    <MiniAction icon={Download} label="PDF" onClick={() => handleExportRow(row, "pdf")} />
+                    <MiniAction icon={FileType2} label="Word" onClick={() => handleExportRow(row, "docx")} />
+                    <MiniAction icon={Trash2} label="Eliminar" onClick={() => handleDelete(row.id)} danger />
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
       </div>
     </AppShell>
+
   );
 }
 
