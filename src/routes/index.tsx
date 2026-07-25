@@ -5,10 +5,10 @@ import { Dashboard } from "@/components/recruit/Dashboard";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Dashboard — RecruitAI OS" },
-      { name: "description", content: "Real-time hiring pipeline, AI screening activity and team performance in one command center." },
-      { property: "og:title", content: "Dashboard — RecruitAI OS" },
-      { property: "og:description", content: "Real-time hiring pipeline, AI screening activity and team performance in one command center." },
+      { title: "Inicio — RecruitAI OS" },
+      { name: "description", content: "Flujo de contratación en tiempo real, actividad de evaluación IA y desempeño del equipo en un solo centro de mando." },
+      { property: "og:title", content: "Inicio — RecruitAI OS" },
+      { property: "og:description", content: "Flujo de contratación en tiempo real, actividad de evaluación IA y desempeño del equipo en un solo centro de mando." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
