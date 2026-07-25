@@ -136,7 +136,7 @@ function SmartEmailsPage() {
               <p className="mt-2 text-sm text-foreground/90">
                 Perfecto Elena — invitación enviada para el jueves a las 15:00 CET. Adjunté un breve documento de preparación con el roadmap y el equipo con el que trabajarías. ¡Nos vemos!
               </p>
-              <div className="mt-3 flex items-center gap-2">
+              <div className="mt-3 flex flex-wrap items-center gap-2">
                 <button className="rounded-lg gradient-primary px-3 py-1.5 text-xs font-semibold text-white shadow-glow">
                   <Send className="mr-1 inline h-3 w-3" /> Enviar ahora
                 </button>
