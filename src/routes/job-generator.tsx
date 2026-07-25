@@ -846,13 +846,18 @@ function JobGeneratorPage() {
   );
 }
 
-function ActionBtn({ icon: Icon, label }: { icon: React.ComponentType<{ className?: string }>; label: string }) {
+function ActionBtn({ icon: Icon, label, onClick, loading }: { icon: React.ComponentType<{ className?: string }>; label: string; onClick?: () => void; loading?: boolean }) {
   return (
-    <button className="inline-flex items-center gap-2 rounded-xl border border-border-strong bg-surface/60 px-3.5 py-2 text-xs font-semibold text-muted-foreground transition hover:text-foreground">
-      <Icon className="h-3.5 w-3.5" /> {label}
+    <button
+      onClick={onClick}
+      disabled={loading}
+      className="inline-flex items-center gap-2 rounded-xl border border-border-strong bg-surface/60 px-3.5 py-2 text-xs font-semibold text-muted-foreground transition hover:border-primary/50 hover:text-foreground disabled:opacity-60"
+    >
+      <Icon className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} /> {label}
     </button>
   );
 }
+
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
