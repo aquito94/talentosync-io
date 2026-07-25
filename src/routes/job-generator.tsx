@@ -566,32 +566,23 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-function TabContent({ id, skills, benefits }: { id: TabId; skills: string[]; benefits: string[] }) {
+function TabContent({
+  id,
+  vacancy,
+  skills,
+  benefits,
+}: {
+  id: TabId;
+  vacancy: JobVacancy | null;
+  skills: string[];
+  benefits: string[];
+}) {
   if (id === "resumen") {
     return (
       <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
         <div className="space-y-5">
           <Section title="Resumen ejecutivo">
-            <p>
-              Nova Retail Group busca un <strong>Ingeniero Senior Frontend</strong> para liderar la evolución técnica de su plataforma
-              de e-commerce en Madrid, bajo modalidad híbrida. El rol combina excelencia técnica, visión de producto y colaboración
-              cercana con diseño y datos.
-            </p>
-          </Section>
-          <Section title="Highlights">
-            <ul className="grid gap-2 sm:grid-cols-2">
-              {[
-                ["Impacto", "Plataforma con +2M usuarios/mes"],
-                ["Equipo", "Squad multidisciplinar de 8 personas"],
-                ["Stack", "React · TypeScript · GraphQL · AWS"],
-                ["Modalidad", "Híbrido · 2 días en oficina"],
-              ].map(([k, v]) => (
-                <li key={k} className="rounded-xl border border-border/60 bg-surface/40 p-3">
-                  <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">{k}</div>
-                  <div className="mt-1 text-sm font-medium">{v}</div>
-                </li>
-              ))}
-            </ul>
+            <p>{vacancy?.resumen || "La IA aún no ha generado un resumen ejecutivo."}</p>
           </Section>
         </div>
         <aside className="space-y-3">
@@ -614,72 +605,77 @@ function TabContent({ id, skills, benefits }: { id: TabId; skills: string[]; ben
   }
 
   if (id === "descripcion") {
+    const text = vacancy?.descripcion ?? "";
     return (
       <Section title="Descripción del cargo">
-        <p>
-          Como Ingeniero Senior Frontend, serás responsable de diseñar, construir y mantener las experiencias digitales que millones
-          de clientes utilizan cada mes. Trabajarás mano a mano con producto, diseño y datos para llevar ideas desde el
-          descubrimiento hasta producción, cuidando el rendimiento, la accesibilidad y la mantenibilidad del código.
-        </p>
-        <p className="mt-3">
-          Buscamos a alguien con criterio técnico, mentalidad de producto y ganas de elevar el estándar del equipo mediante mentoría,
-          revisiones de código y evangelización de buenas prácticas.
-        </p>
+        {text
+          ? text.split(/\n\n+/).map((p, i) => (
+              <p key={i} className={i > 0 ? "mt-3" : ""}>{p}</p>
+            ))
+          : <p className="text-muted-foreground">Sin descripción generada.</p>}
       </Section>
     );
   }
 
   if (id === "responsabilidades") {
-    const items = [
-      "Diseñar e implementar interfaces performantes, accesibles y escalables.",
-      "Colaborar con producto y diseño para transformar problemas en soluciones medibles.",
-      "Definir la arquitectura frontend y las guías técnicas del squad.",
-      "Impulsar la calidad mediante testing, revisiones de código y observabilidad.",
-      "Mentorizar a ingenieros junior y semi-senior del equipo.",
-      "Participar en la estrategia técnica de la plataforma junto al Staff Engineer.",
-    ];
+    const items = vacancy?.responsabilidades ?? [];
     return (
       <Section title="Responsabilidades principales">
-        <ul className="space-y-2">
-          {items.map((t) => (
-            <li key={t} className="flex items-start gap-3 rounded-xl border border-border/60 bg-surface/40 p-3">
-              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-              <span>{t}</span>
-            </li>
-          ))}
-        </ul>
+        {items.length === 0 ? (
+          <p className="text-muted-foreground">Sin responsabilidades generadas.</p>
+        ) : (
+          <ul className="space-y-2">
+            {items.map((t) => (
+              <li key={t} className="flex items-start gap-3 rounded-xl border border-border/60 bg-surface/40 p-3">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                <span>{t}</span>
+              </li>
+            ))}
+          </ul>
+        )}
       </Section>
     );
   }
 
   if (id === "perfil") {
+    const must = vacancy?.perfil.debeTener ?? [];
+    const nice = vacancy?.perfil.deseable ?? [];
     return (
       <div className="grid gap-6 md:grid-cols-2">
         <Section title="Debe tener">
-          <ul className="space-y-2">
-            {["5+ años en desarrollo frontend en producción", "Experiencia sólida con React y TypeScript", "Dominio de patrones de arquitectura y testing", "Sensibilidad por UX y accesibilidad"].map((t) => (
-              <li key={t} className="flex items-start gap-2"><CheckCircle2 className="mt-0.5 h-4 w-4 text-success" />{t}</li>
-            ))}
-          </ul>
+          {must.length === 0 ? (
+            <p className="text-muted-foreground">—</p>
+          ) : (
+            <ul className="space-y-2">
+              {must.map((t) => (
+                <li key={t} className="flex items-start gap-2"><CheckCircle2 className="mt-0.5 h-4 w-4 text-success" />{t}</li>
+              ))}
+            </ul>
+          )}
         </Section>
         <Section title="Deseable">
-          <ul className="space-y-2">
-            {["Experiencia con GraphQL y micro-frontends", "Contribuciones a open source", "Trabajo previo en e-commerce a gran escala", "Inglés profesional B2+"].map((t) => (
-              <li key={t} className="flex items-start gap-2"><Plus className="mt-0.5 h-4 w-4 text-primary" />{t}</li>
-            ))}
-          </ul>
+          {nice.length === 0 ? (
+            <p className="text-muted-foreground">—</p>
+          ) : (
+            <ul className="space-y-2">
+              {nice.map((t) => (
+                <li key={t} className="flex items-start gap-2"><Plus className="mt-0.5 h-4 w-4 text-primary" />{t}</li>
+              ))}
+            </ul>
+          )}
         </Section>
       </div>
     );
   }
 
   if (id === "competencias") {
-    const soft = ["Comunicación", "Liderazgo técnico", "Pensamiento crítico", "Colaboración"];
+    const tech = vacancy?.competencias.tecnicas ?? skills;
+    const soft = vacancy?.competencias.blandas ?? [];
     return (
       <div className="grid gap-6 md:grid-cols-2">
         <Section title="Competencias técnicas">
           <div className="flex flex-wrap gap-2">
-            {skills.map((s) => (
+            {tech.map((s) => (
               <span key={s} className="rounded-lg bg-primary/15 px-2.5 py-1 text-xs font-medium">{s}</span>
             ))}
           </div>
@@ -696,79 +692,85 @@ function TabContent({ id, skills, benefits }: { id: TabId; skills: string[]; ben
   }
 
   if (id === "beneficios") {
-    const all = [...benefits, "Presupuesto anual de formación", "Días extra de vacaciones", "Plan de acciones"];
+    const all = vacancy?.beneficios ?? benefits;
     return (
       <Section title="Beneficios y cultura">
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {all.map((b) => (
-            <div key={b} className="flex items-center gap-3 rounded-xl border border-border/60 bg-surface/40 p-3">
-              <Gift className="h-4 w-4 text-accent" />
-              <span className="text-sm">{b}</span>
-            </div>
-          ))}
-        </div>
+        {all.length === 0 ? (
+          <p className="text-muted-foreground">Sin beneficios generados.</p>
+        ) : (
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {all.map((b) => (
+              <div key={b} className="flex items-center gap-3 rounded-xl border border-border/60 bg-surface/40 p-3">
+                <Gift className="h-4 w-4 text-accent" />
+                <span className="text-sm">{b}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </Section>
     );
   }
 
   if (id === "kpis") {
-    const kpis = [
-      ["Time-to-market", "-30% en el primer año"],
-      ["Core Web Vitals", "≥ 90 en todas las páginas clave"],
-      ["Cobertura de tests", "≥ 80% en módulos críticos"],
-      ["NPS interno del equipo", "≥ 45"],
-    ];
+    const kpis = vacancy?.kpis ?? [];
     return (
       <Section title="Indicadores clave de éxito">
-        <div className="grid gap-3 sm:grid-cols-2">
-          {kpis.map(([k, v]) => (
-            <div key={k} className="rounded-xl border border-border/60 bg-surface/40 p-4">
-              <div className="flex items-center gap-2 text-xs font-semibold text-primary">
-                <Gauge className="h-3.5 w-3.5" /> {k}
+        {kpis.length === 0 ? (
+          <p className="text-muted-foreground">Sin KPIs generados.</p>
+        ) : (
+          <div className="grid gap-3 sm:grid-cols-2">
+            {kpis.map((k, i) => (
+              <div key={`${k.nombre}-${i}`} className="rounded-xl border border-border/60 bg-surface/40 p-4">
+                <div className="flex items-center gap-2 text-xs font-semibold text-primary">
+                  <Gauge className="h-3.5 w-3.5" /> {k.nombre}
+                </div>
+                <div className="mt-1 text-sm text-foreground/90">{k.meta}</div>
               </div>
-              <div className="mt-1 text-sm text-foreground/90">{v}</div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </Section>
     );
   }
 
   if (id === "star") {
-    const qs = [
-      ["Situación", "Cuéntame un proyecto frontend complejo en el que hayas participado."],
-      ["Tarea", "¿Cuál era tu responsabilidad específica dentro del equipo?"],
-      ["Acción", "¿Qué decisiones técnicas tomaste y por qué?"],
-      ["Resultado", "¿Qué impacto medible tuvo en el negocio o los usuarios?"],
-    ];
+    const qs = vacancy?.preguntasStar ?? [];
     return (
       <Section title="Preguntas de entrevista STAR">
-        <ol className="space-y-3">
-          {qs.map(([k, q], i) => (
-            <li key={k} className="rounded-xl border border-border/60 bg-surface/40 p-4">
-              <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-primary">
-                <MessageSquareQuote className="h-3.5 w-3.5" /> {i + 1}. {k}
-              </div>
-              <p className="mt-1.5 text-sm">{q}</p>
-            </li>
-          ))}
-        </ol>
+        {qs.length === 0 ? (
+          <p className="text-muted-foreground">Sin preguntas generadas.</p>
+        ) : (
+          <ol className="space-y-3">
+            {qs.map((q, i) => (
+              <li key={i} className="rounded-xl border border-border/60 bg-surface/40 p-4">
+                <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-primary">
+                  <MessageSquareQuote className="h-3.5 w-3.5" /> {i + 1}. {q.categoria}
+                </div>
+                <p className="mt-1.5 text-sm">{q.pregunta}</p>
+              </li>
+            ))}
+          </ol>
+        )}
       </Section>
     );
   }
 
   // ATS
-  const kw = ["React", "TypeScript", "Frontend Senior", "GraphQL", "AWS", "Accesibilidad", "Core Web Vitals", "E-commerce", "Micro-frontends", "Testing", "CI/CD", "Madrid"];
+  const kw = vacancy?.palabrasAts ?? [];
   return (
     <Section title="Palabras clave optimizadas para ATS">
       <p className="text-muted-foreground">Estas palabras aumentan la visibilidad de la vacante en LinkedIn, Indeed y sistemas ATS internos.</p>
-      <div className="mt-3 flex flex-wrap gap-2">
-        {kw.map((k) => (
-          <span key={k} className="inline-flex items-center gap-1.5 rounded-lg border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-foreground">
-            <Search className="h-3 w-3 text-primary" /> {k}
-          </span>
-        ))}
-      </div>
+      {kw.length === 0 ? (
+        <p className="mt-3 text-muted-foreground">Sin palabras clave generadas.</p>
+      ) : (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {kw.map((k) => (
+            <span key={k} className="inline-flex items-center gap-1.5 rounded-lg border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-foreground">
+              <Search className="h-3 w-3 text-primary" /> {k}
+            </span>
+          ))}
+        </div>
+      )}
     </Section>
   );
 }
