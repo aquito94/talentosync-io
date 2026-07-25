@@ -488,11 +488,19 @@ function JobGeneratorPage() {
             <button className="rounded-xl border border-border-strong bg-surface/60 px-3.5 py-2 text-xs font-semibold text-muted-foreground transition hover:text-foreground">
               Cargar plantilla
             </button>
-            <button className="rounded-xl border border-border-strong bg-surface/60 px-3.5 py-2 text-xs font-semibold text-muted-foreground transition hover:text-foreground">
-              Historial
+            <button
+              onClick={() => {
+                setShowHistory(true);
+                refreshHistory();
+                setTimeout(() => document.getElementById("vacantes-guardadas")?.scrollIntoView({ behavior: "smooth" }), 50);
+              }}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-border-strong bg-surface/60 px-3.5 py-2 text-xs font-semibold text-muted-foreground transition hover:text-foreground"
+            >
+              <History className="h-3.5 w-3.5" /> Historial ({savedList.length})
             </button>
           </div>
         </div>
+
 
         {/* Main grid */}
         <div className="mt-8 grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
