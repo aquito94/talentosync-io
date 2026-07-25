@@ -349,14 +349,14 @@ function JobGeneratorPage() {
                 Listo para generar · 11 campos completados
               </div>
               <button
-                onClick={handleGenerate}
-                disabled={generating}
+                onClick={generarVacante}
+                disabled={loading}
                 className="group relative inline-flex items-center justify-center gap-2 rounded-2xl gradient-primary px-6 py-3.5 text-sm font-semibold text-white shadow-glow transition hover:brightness-110 disabled:opacity-70"
               >
-                {generating ? (
+                {loading ? (
                   <>
                     <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
-                    Generando vacante…
+                    Generando...
                   </>
                 ) : (
                   <>
