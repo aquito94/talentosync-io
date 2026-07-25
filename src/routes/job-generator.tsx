@@ -225,11 +225,13 @@ function JobGeneratorPage() {
               </Field>
               <Field label="Modalidad" icon={Zap}>
                 <div className="grid grid-cols-3 gap-2">
-                  {["Remoto", "Híbrido", "Presencial"].map((m, i) => (
+                  {["Remoto", "Híbrido", "Presencial"].map((m) => (
                     <button
                       key={m}
+                      type="button"
+                      onClick={() => setModalidad(m)}
                       className={`rounded-xl border px-3 py-2 text-xs font-semibold transition ${
-                        i === 1
+                        modalidad === m
                           ? "border-primary/60 bg-primary/15 text-foreground shadow-glow"
                           : "border-border-strong bg-surface/60 text-muted-foreground hover:text-foreground"
                       }`}
@@ -240,7 +242,7 @@ function JobGeneratorPage() {
                 </div>
               </Field>
               <Field label="Tipo de contratación" icon={FileType2}>
-                <select className={inputCls} defaultValue="Indefinido">
+                <select className={inputCls} value={tipoContratacion} onChange={(e) => setTipoContratacion(e.target.value)}>
                   <option>Indefinido</option>
                   <option>Temporal</option>
                   <option>Por proyecto</option>
@@ -250,11 +252,13 @@ function JobGeneratorPage() {
               </Field>
               <Field label="Nivel" icon={Layers}>
                 <div className="grid grid-cols-4 gap-2">
-                  {["Junior", "Semi", "Senior", "Lead"].map((n, i) => (
+                  {["Junior", "Semi", "Senior", "Lead"].map((n) => (
                     <button
                       key={n}
+                      type="button"
+                      onClick={() => setNivel(n)}
                       className={`rounded-xl border px-2.5 py-2 text-xs font-semibold transition ${
-                        i === 2
+                        nivel === n
                           ? "border-primary/60 bg-primary/15 text-foreground shadow-glow"
                           : "border-border-strong bg-surface/60 text-muted-foreground hover:text-foreground"
                       }`}
@@ -266,9 +270,9 @@ function JobGeneratorPage() {
               </Field>
               <Field label="Rango salarial" icon={DollarSign} hint="Anual bruto, en la moneda local.">
                 <div className="flex items-center gap-2">
-                  <input className={inputCls} placeholder="Mínimo" defaultValue="45.000 €" />
+                  <input className={inputCls} placeholder="Mínimo" value={salarioMin} onChange={(e) => setSalarioMin(e.target.value)} />
                   <span className="text-muted-foreground">—</span>
-                  <input className={inputCls} placeholder="Máximo" defaultValue="65.000 €" />
+                  <input className={inputCls} placeholder="Máximo" value={salarioMax} onChange={(e) => setSalarioMax(e.target.value)} />
                 </div>
               </Field>
 
