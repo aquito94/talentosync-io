@@ -9,8 +9,50 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SmartEmailsRouteImport } from './routes/smart-emails'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as RecruitCopilotRouteImport } from './routes/recruit-copilot'
+import { Route as PromptLibraryRouteImport } from './routes/prompt-library'
+import { Route as JobGeneratorRouteImport } from './routes/job-generator'
+import { Route as CandidateAnalyzerRouteImport } from './routes/candidate-analyzer'
+import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as IndexRouteImport } from './routes/index'
 
+const SmartEmailsRoute = SmartEmailsRouteImport.update({
+  id: '/smart-emails',
+  path: '/smart-emails',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RecruitCopilotRoute = RecruitCopilotRouteImport.update({
+  id: '/recruit-copilot',
+  path: '/recruit-copilot',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PromptLibraryRoute = PromptLibraryRouteImport.update({
+  id: '/prompt-library',
+  path: '/prompt-library',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JobGeneratorRoute = JobGeneratorRouteImport.update({
+  id: '/job-generator',
+  path: '/job-generator',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CandidateAnalyzerRoute = CandidateAnalyzerRouteImport.update({
+  id: '/candidate-analyzer',
+  path: '/candidate-analyzer',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AnalyticsRoute = AnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -19,28 +61,130 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/analytics': typeof AnalyticsRoute
+  '/candidate-analyzer': typeof CandidateAnalyzerRoute
+  '/job-generator': typeof JobGeneratorRoute
+  '/prompt-library': typeof PromptLibraryRoute
+  '/recruit-copilot': typeof RecruitCopilotRoute
+  '/settings': typeof SettingsRoute
+  '/smart-emails': typeof SmartEmailsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/analytics': typeof AnalyticsRoute
+  '/candidate-analyzer': typeof CandidateAnalyzerRoute
+  '/job-generator': typeof JobGeneratorRoute
+  '/prompt-library': typeof PromptLibraryRoute
+  '/recruit-copilot': typeof RecruitCopilotRoute
+  '/settings': typeof SettingsRoute
+  '/smart-emails': typeof SmartEmailsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/analytics': typeof AnalyticsRoute
+  '/candidate-analyzer': typeof CandidateAnalyzerRoute
+  '/job-generator': typeof JobGeneratorRoute
+  '/prompt-library': typeof PromptLibraryRoute
+  '/recruit-copilot': typeof RecruitCopilotRoute
+  '/settings': typeof SettingsRoute
+  '/smart-emails': typeof SmartEmailsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/analytics'
+    | '/candidate-analyzer'
+    | '/job-generator'
+    | '/prompt-library'
+    | '/recruit-copilot'
+    | '/settings'
+    | '/smart-emails'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/analytics'
+    | '/candidate-analyzer'
+    | '/job-generator'
+    | '/prompt-library'
+    | '/recruit-copilot'
+    | '/settings'
+    | '/smart-emails'
+  id:
+    | '__root__'
+    | '/'
+    | '/analytics'
+    | '/candidate-analyzer'
+    | '/job-generator'
+    | '/prompt-library'
+    | '/recruit-copilot'
+    | '/settings'
+    | '/smart-emails'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AnalyticsRoute: typeof AnalyticsRoute
+  CandidateAnalyzerRoute: typeof CandidateAnalyzerRoute
+  JobGeneratorRoute: typeof JobGeneratorRoute
+  PromptLibraryRoute: typeof PromptLibraryRoute
+  RecruitCopilotRoute: typeof RecruitCopilotRoute
+  SettingsRoute: typeof SettingsRoute
+  SmartEmailsRoute: typeof SmartEmailsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/smart-emails': {
+      id: '/smart-emails'
+      path: '/smart-emails'
+      fullPath: '/smart-emails'
+      preLoaderRoute: typeof SmartEmailsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/recruit-copilot': {
+      id: '/recruit-copilot'
+      path: '/recruit-copilot'
+      fullPath: '/recruit-copilot'
+      preLoaderRoute: typeof RecruitCopilotRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/prompt-library': {
+      id: '/prompt-library'
+      path: '/prompt-library'
+      fullPath: '/prompt-library'
+      preLoaderRoute: typeof PromptLibraryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/job-generator': {
+      id: '/job-generator'
+      path: '/job-generator'
+      fullPath: '/job-generator'
+      preLoaderRoute: typeof JobGeneratorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/candidate-analyzer': {
+      id: '/candidate-analyzer'
+      path: '/candidate-analyzer'
+      fullPath: '/candidate-analyzer'
+      preLoaderRoute: typeof CandidateAnalyzerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/analytics': {
+      id: '/analytics'
+      path: '/analytics'
+      fullPath: '/analytics'
+      preLoaderRoute: typeof AnalyticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -53,6 +197,13 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AnalyticsRoute: AnalyticsRoute,
+  CandidateAnalyzerRoute: CandidateAnalyzerRoute,
+  JobGeneratorRoute: JobGeneratorRoute,
+  PromptLibraryRoute: PromptLibraryRoute,
+  RecruitCopilotRoute: RecruitCopilotRoute,
+  SettingsRoute: SettingsRoute,
+  SmartEmailsRoute: SmartEmailsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
