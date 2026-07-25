@@ -801,14 +801,16 @@ function JobGeneratorPage() {
                   </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <ActionBtn icon={Save} label="Guardar" />
-                  <ActionBtn icon={Download} label="Exportar PDF" />
-                  <ActionBtn icon={FileType2} label="Exportar Word" />
-                  <ActionBtn icon={Copy} label="Copiar" />
-                  <button className="inline-flex items-center gap-2 rounded-xl gradient-primary px-3.5 py-2 text-xs font-semibold text-white shadow-glow">
+                  <ActionBtn icon={savingId ? Loader2 : Save} label={savedId ? "Actualizar" : "Guardar"} onClick={handleSave} loading={savingId} />
+                  <ActionBtn icon={Download} label="Exportar PDF" onClick={handleExportPDF} />
+                  <ActionBtn icon={FileType2} label="Exportar Word" onClick={handleExportDOCX} />
+                  <ActionBtn icon={Copy} label="Copiar" onClick={handleCopy} />
+                  <ActionBtn icon={Share2} label="Compartir" onClick={handleShare} />
+                  <button className="inline-flex items-center gap-2 rounded-xl gradient-primary px-3.5 py-2 text-xs font-semibold text-white shadow-glow hover:brightness-110">
                     <Send className="h-3.5 w-3.5" /> Publicar
                   </button>
                 </div>
+
               </div>
 
               {/* Tabs */}
