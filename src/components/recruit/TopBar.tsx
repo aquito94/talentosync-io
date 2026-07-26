@@ -1,7 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { ChevronDown, ChevronRight, Menu, Search } from "lucide-react";
 import { useShell } from "./AppShell";
-import avatarAsset from "@/assets/genesis-rios.jpeg.asset.json";
+
 
 
 const labels: Record<string, string> = {
@@ -52,13 +52,10 @@ export function TopBar() {
       <div className="flex items-center gap-2">
 
         <div className="ml-1 flex items-center gap-2.5 rounded-xl border border-border-strong bg-surface/60 px-2 py-1 pr-2 transition hover:bg-surface sm:pr-3">
-          <div className="grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-lg ring-1 ring-border-strong">
-            <img
-              src={avatarAsset.url}
-              alt="Genesis Rios"
-              className="h-full w-full object-cover object-[center_20%]"
-            />
+          <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-primary/90 to-accent/90 text-[11px] font-semibold tracking-wide text-primary-foreground ring-1 ring-border-strong">
+            GR
           </div>
+
 
           <div className="hidden xl:block leading-tight min-w-0">
             <div className="text-xs font-semibold truncate">Genesis Rios</div>
