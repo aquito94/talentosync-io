@@ -117,25 +117,6 @@ function SidebarInner({ onNavigate }: { onNavigate?: () => void }) {
         </ul>
       </nav>
 
-      <div className="p-4 shrink-0">
-        <div className="glass-panel relative overflow-hidden rounded-2xl p-4">
-          <div className="absolute inset-0 opacity-50" style={{ background: "var(--gradient-hero)" }} />
-          <div className="relative">
-            <div className="flex items-center gap-2 text-xs font-semibold">
-              <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" />
-              <span className="truncate">Créditos de IA</span>
-            </div>
-            <div className="mt-2 text-2xl font-semibold tracking-tight">18.240</div>
-            <div className="mt-1 text-[11px] text-muted-foreground">de 25.000 este mes</div>
-            <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-background/60">
-              <div className="h-full w-[72%] rounded-full gradient-primary" />
-            </div>
-            <button className="mt-4 w-full rounded-lg border border-border-strong bg-background/40 py-2 text-xs font-semibold text-foreground/90 transition hover:bg-background/70">
-              Mejorar plan
-            </button>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

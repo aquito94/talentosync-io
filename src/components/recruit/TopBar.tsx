@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Bell, ChevronDown, ChevronRight, Menu, Search, Sparkles } from "lucide-react";
+import { ChevronDown, ChevronRight, Menu, Search } from "lucide-react";
 import { useShell } from "./AppShell";
 
 const labels: Record<string, string> = {
@@ -53,9 +53,6 @@ export function TopBar() {
           placeholder="Buscar candidatos, vacantes, prompts…"
           className="min-w-0 flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
         />
-        <kbd className="hidden lg:inline-block rounded border border-border bg-background/60 px-1.5 py-0.5 text-[10px] font-medium">
-          ⌘ K
-        </kbd>
       </div>
 
       {/* Search icon-only on small */}
@@ -68,17 +65,6 @@ export function TopBar() {
       </button>
 
       <div className="flex items-center gap-2">
-        <button className="relative hidden lg:grid h-9 w-9 place-items-center rounded-xl gradient-primary text-white shadow-glow animate-pulse-glow">
-          <Sparkles className="h-4 w-4" />
-        </button>
-
-        <button
-          aria-label="Notificaciones"
-          className="relative grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-border-strong bg-surface/60 text-muted-foreground transition hover:text-foreground"
-        >
-          <Bell className="h-4 w-4" />
-          <span className="absolute top-2 right-2 h-1.5 w-1.5 rounded-full bg-primary shadow-glow" />
-        </button>
 
         <div className="ml-1 flex items-center gap-2.5 rounded-xl border border-border-strong bg-surface/60 px-2 py-1 pr-2 transition hover:bg-surface sm:pr-3">
           <div className="grid h-7 w-7 shrink-0 place-items-center rounded-lg gradient-primary text-xs font-semibold text-white">
