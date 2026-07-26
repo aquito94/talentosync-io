@@ -54,7 +54,7 @@ export function TopBar() {
             GR
           </div>
           <div className="hidden xl:block leading-tight min-w-0">
-            <div className="text-xs font-semibold truncate">Gerardo Rodríguez</div>
+            <div className="text-xs font-semibold truncate">Genesis Rios</div>
             <div className="text-[10px] text-muted-foreground truncate">Gerente de Reclutamiento</div>
           </div>
           <ChevronDown className="hidden sm:block h-3.5 w-3.5 shrink-0 text-muted-foreground" />
