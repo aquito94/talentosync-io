@@ -45,24 +45,7 @@ export function TopBar() {
         <div className="truncate text-sm font-semibold text-foreground">{current}</div>
       </div>
 
-      {/* Buscador global */}
-      <div className="hidden md:flex ml-auto min-w-0 flex-1 max-w-md items-center gap-2 rounded-xl border border-border-strong bg-surface/60 px-3.5 py-2 text-sm text-muted-foreground transition focus-within:border-primary/60 focus-within:shadow-glow">
-        <Search className="h-4 w-4 shrink-0" />
-        <input
-          type="text"
-          placeholder="Buscar candidatos, vacantes, prompts…"
-          className="min-w-0 flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
-        />
-      </div>
-
-      {/* Search icon-only on small */}
-      <button
-        type="button"
-        aria-label="Buscar"
-        className="md:hidden ml-auto grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-border-strong bg-surface/60 text-muted-foreground transition hover:text-foreground"
-      >
-        <Search className="h-4 w-4" />
-      </button>
+      <div className="ml-auto" />
 
       <div className="flex items-center gap-2">
 

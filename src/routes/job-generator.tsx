@@ -474,9 +474,6 @@ function JobGeneratorPage() {
         {/* Header */}
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between animate-float-up">
           <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-primary">
-              <Sparkles className="h-3 w-3" /> Módulo IA
-            </div>
             <h1 className="mt-3 text-3xl font-semibold tracking-tight md:text-4xl">
               Generador Inteligente de Vacantes
             </h1>
