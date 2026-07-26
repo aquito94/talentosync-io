@@ -51,11 +51,11 @@ export function TopBar() {
 
         <div className="ml-1 flex items-center gap-2.5 rounded-xl border border-border-strong bg-surface/60 px-2 py-1 pr-2 transition hover:bg-surface sm:pr-3">
           <div className="grid h-7 w-7 shrink-0 place-items-center rounded-lg gradient-primary text-xs font-semibold text-white">
-            ÁM
+            GR
           </div>
           <div className="hidden xl:block leading-tight min-w-0">
-            <div className="text-xs font-semibold truncate">Álvaro Morán</div>
-            <div className="text-[10px] text-muted-foreground truncate">Director de Talento</div>
+            <div className="text-xs font-semibold truncate">Gerardo Rodríguez</div>
+            <div className="text-[10px] text-muted-foreground truncate">Gerente de Reclutamiento</div>
           </div>
           <ChevronDown className="hidden sm:block h-3.5 w-3.5 shrink-0 text-muted-foreground" />
         </div>

@@ -104,7 +104,7 @@ export function Dashboard() {
               Copiloto IA activo · 4 flujos en ejecución
             </div>
             <h1 className="mt-4 text-3xl md:text-4xl font-semibold tracking-tight">
-              Bienvenido nuevamente, Álvaro.
+              Bienvenido nuevamente, Gerardo.
             </h1>
             <p className="mt-3 text-sm text-muted-foreground">
               Tu asistente inteligente para acelerar y optimizar cada proceso de reclutamiento.
