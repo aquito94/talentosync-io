@@ -1,6 +1,8 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { ChevronDown, ChevronRight, Menu, Search } from "lucide-react";
 import { useShell } from "./AppShell";
+import avatarAsset from "@/assets/genesis-rios.jpeg.asset.json";
+
 
 const labels: Record<string, string> = {
   "": "Inicio",
