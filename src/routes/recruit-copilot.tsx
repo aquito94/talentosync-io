@@ -177,78 +177,38 @@ function CopilotPage() {
     if (savedActive && list.some((c) => c.id === savedActive)) setActiveConvId(savedActive);
   }, []);
 
-  // Load vacantes from Supabase (ensure anon session so RLS allows read)
+  // Load vacantes via server function (bypasses RLS for context)
   useEffect(() => {
     (async () => {
-      const { data: sess } = await supabase.auth.getSession();
-      if (!sess.session) {
-        const { error: signErr } = await supabase.auth.signInAnonymously();
-        if (signErr) {
-          console.warn("[copilot] sesión anónima:", signErr.message);
-        }
+      try {
+        const list = await listVacantesFn();
+        setVacantes(list as Vacante[]);
+        if (list.length && !activeVacanteId) setActiveVacanteId(list[0].id);
+      } catch (e) {
+        console.warn("[copilot] cargar vacantes:", e instanceof Error ? e.message : e);
       }
-      const { data, error } = await supabase
-        .from("vacantes")
-        .select("id, cargo, empresa, ciudad, nivel, modalidad, estado, perfil_ideal, descripcion, objetivo_cargo, competencias, updated_at")
-        .order("updated_at", { ascending: false })
-        .limit(50);
-      if (error) {
-        console.warn("[copilot] cargar vacantes:", error.message);
-        return;
-      }
-      const list = (data ?? []) as Vacante[];
-      setVacantes(list);
-      if (list.length && !activeVacanteId) setActiveVacanteId(list[0].id);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-
-  // When active vacante changes, load its candidatos (via evaluaciones)
+  // When active vacante changes, load its candidatos
   useEffect(() => {
     if (!activeVacanteId) {
       setCandidatos([]);
       return;
     }
     (async () => {
-      const { data, error } = await supabase
-        .from("evaluaciones_ia")
-        .select(
-          "compatibilidad, recomendacion, resumen_ejecutivo, fortalezas, riesgos, competencias_detectadas, candidatos(id, nombre_completo)",
-        )
-        .eq("vacante_id", activeVacanteId)
-        .order("compatibilidad", { ascending: false })
-        .limit(30);
-      if (error) {
-        console.warn("[copilot] cargar evaluaciones:", error.message);
+      try {
+        const rows = await listCandidatosFn({ data: { vacanteId: activeVacanteId } });
+        setCandidatos(rows as CandidatoCtx[]);
+      } catch (e) {
+        console.warn("[copilot] cargar evaluaciones:", e instanceof Error ? e.message : e);
         setCandidatos([]);
-        return;
       }
-      const rows = (data ?? []) as Array<{
-        compatibilidad: number | null;
-        recomendacion: string | null;
-        resumen_ejecutivo: string | null;
-        fortalezas: string[] | null;
-        riesgos: string[] | null;
-        competencias_detectadas: string[] | null;
-        candidatos: { id: string; nombre_completo: string } | null;
-      }>;
-      setCandidatos(
-        rows
-          .filter((r) => r.candidatos)
-          .map((r) => ({
-            id: r.candidatos!.id,
-            nombre: r.candidatos!.nombre_completo,
-            compatibilidad: r.compatibilidad,
-            recomendacion: r.recomendacion,
-            resumen: r.resumen_ejecutivo,
-            fortalezas: r.fortalezas ?? [],
-            riesgos: r.riesgos ?? [],
-            competencias: r.competencias_detectadas ?? [],
-          })),
-      );
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeVacanteId]);
+
 
   // Auto scroll on new messages
   useEffect(() => {
