@@ -498,11 +498,17 @@ function CandidateAnalyzerPage() {
             <div className="glass-panel rounded-2xl p-3">
               <div className="px-2 pb-2 pt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Acciones rápidas</div>
               <ul className="space-y-1.5">
-                {QUICK_ACTIONS.map((a) => (
-                  <li key={a.title}>
-                    <button className="group grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3 rounded-xl border border-transparent bg-surface/40 p-3 text-left transition hover:border-primary/40 hover:bg-primary/5">
+                {QUICK_ACTIONS.map((a) => {
+                  const loading = quickLoading === a.key;
+                  return (
+                  <li key={a.key}>
+                    <button
+                      onClick={() => runAction(a.key)}
+                      disabled={quickLoading !== null}
+                      className="group grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3 rounded-xl border border-transparent bg-surface/40 p-3 text-left transition hover:border-primary/40 hover:bg-primary/5 disabled:opacity-60"
+                    >
                       <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-primary/15 text-primary transition group-hover:bg-primary group-hover:text-white">
-                        <a.icon className="h-4 w-4" />
+                        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <a.icon className="h-4 w-4" />}
                       </span>
                       <span className="min-w-0">
                         <span className="block text-sm font-semibold text-foreground">{a.title}</span>
@@ -511,7 +517,8 @@ function CandidateAnalyzerPage() {
                       <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-muted-foreground/60 transition group-hover:translate-x-0.5 group-hover:text-primary" />
                     </button>
                   </li>
-                ))}
+                  );
+                })}
               </ul>
             </div>
 
