@@ -838,6 +838,44 @@ function CopilotPage() {
           </div>
         </aside>
       </div>
+      {expedienteFor && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-background/80 p-4 backdrop-blur-sm" onClick={() => setExpedienteFor(null)}>
+          <div className="glass-panel w-full max-w-md overflow-hidden rounded-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="border-b border-border/60 p-5">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-primary">Agregar al expediente</div>
+              <h3 className="mt-1 text-base font-semibold">Selecciona el candidato</h3>
+            </div>
+            <div className="max-h-[60vh] overflow-y-auto p-3">
+              <ul className="space-y-1">
+                {candidatos.map((c) => (
+                  <li key={c.id}>
+                    <button
+                      onClick={() => void addToExpediente(expedienteFor, c.id)}
+                      className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-xl border border-border/60 bg-surface/40 p-3 text-left transition hover:border-primary/40 hover:bg-primary/5"
+                    >
+                      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg gradient-primary text-[11px] font-semibold text-white">
+                        {c.nombre.split(" ").map((n) => n[0]).slice(0, 2).join("")}
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block truncate text-sm font-medium">{c.nombre}</span>
+                        <span className="block text-[11px] text-muted-foreground">{c.recomendacion ?? "—"}</span>
+                      </span>
+                      <span className="rounded-md bg-success/15 px-2 py-0.5 text-[11px] font-semibold text-success">
+                        {c.compatibilidad ?? "—"}%
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="flex justify-end border-t border-border/60 p-3">
+              <button onClick={() => setExpedienteFor(null)} className="rounded-lg border border-border-strong bg-surface/60 px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground">
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </AppShell>
   );
 }
