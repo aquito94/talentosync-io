@@ -456,23 +456,29 @@ function CopilotPage() {
     const body = encodeURIComponent(m.content);
     window.open(`mailto:?subject=${subj}&body=${body}`);
   };
-  const addToExpediente = async (m: Msg) => {
-    if (!bestCandidate) {
-      toast.error("No hay candidato de referencia para el expediente");
-      return;
-    }
+  const [expedienteFor, setExpedienteFor] = useState<Msg | null>(null);
+  const openExpediente = (m: Msg) => {
+    if (candidatos.length === 0) { toast.error("Analiza candidatos primero para agregar notas a un expediente."); return; }
+    setExpedienteFor(m);
+  };
+  const addToExpediente = async (m: Msg, candidatoId: string) => {
+    const target = candidatos.find((c) => c.id === candidatoId);
+    if (!target) return;
     try {
+      const { data: sess } = await supabase.auth.getSession();
+      if (!sess.session) { toast.error("Inicia sesión para actualizar expedientes."); return; }
       const { data: current } = await supabase
         .from("candidatos")
         .select("notas")
-        .eq("id", bestCandidate.id)
+        .eq("id", target.id)
         .maybeSingle();
       const prev = current?.notas ? `${current.notas}\n\n` : "";
       const stamp = new Date().toLocaleString("es-ES");
       const nuevo = `${prev}[Copiloto IA · ${stamp}]\n${m.content}`;
-      const { error } = await supabase.from("candidatos").update({ notas: nuevo }).eq("id", bestCandidate.id);
+      const { error } = await supabase.from("candidatos").update({ notas: nuevo }).eq("id", target.id);
       if (error) throw error;
-      toast.success(`Agregado al expediente de ${bestCandidate.nombre}`);
+      toast.success(`Agregado al expediente de ${target.nombre}`);
+      setExpedienteFor(null);
     } catch (e) {
       const err = e instanceof Error ? e.message : "No se pudo actualizar el expediente";
       toast.error(err);
