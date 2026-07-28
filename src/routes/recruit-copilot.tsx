@@ -35,8 +35,14 @@ import { AppShell } from "@/components/recruit/AppShell";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+// supabase client no longer directly used; data goes through server functions
 import { askCopilot, type CopilotContext } from "@/lib/copilot.functions";
+import {
+  listVacantesForCopilot,
+  listCandidatosForVacante,
+  appendCandidatoNota,
+} from "@/lib/copilot-data.functions";
+
 
 export const Route = createFileRoute("/recruit-copilot")({
   head: () => ({
@@ -139,6 +145,10 @@ function labelOf(v: Vacante | null): string {
 
 function CopilotPage() {
   const askCopilotFn = useServerFn(askCopilot);
+  const listVacantesFn = useServerFn(listVacantesForCopilot);
+  const listCandidatosFn = useServerFn(listCandidatosForVacante);
+  const appendNotaFn = useServerFn(appendCandidatoNota);
+
   const [vacantes, setVacantes] = useState<Vacante[]>([]);
   const [activeVacanteId, setActiveVacanteId] = useState<string | null>(null);
   const [candidatos, setCandidatos] = useState<CandidatoCtx[]>([]);
@@ -167,70 +177,38 @@ function CopilotPage() {
     if (savedActive && list.some((c) => c.id === savedActive)) setActiveConvId(savedActive);
   }, []);
 
-  // Load vacantes from Supabase
+  // Load vacantes via server function (bypasses RLS for context)
   useEffect(() => {
     (async () => {
-      const { data, error } = await supabase
-        .from("vacantes")
-        .select("id, cargo, empresa, ciudad, nivel, modalidad, estado, perfil_ideal, descripcion, objetivo_cargo, competencias, updated_at")
-        .order("updated_at", { ascending: false })
-        .limit(50);
-      if (error) {
-        console.warn("[copilot] cargar vacantes:", error.message);
-        return;
+      try {
+        const list = await listVacantesFn();
+        setVacantes(list as Vacante[]);
+        if (list.length && !activeVacanteId) setActiveVacanteId(list[0].id);
+      } catch (e) {
+        console.warn("[copilot] cargar vacantes:", e instanceof Error ? e.message : e);
       }
-      const list = (data ?? []) as Vacante[];
-      setVacantes(list);
-      if (list.length && !activeVacanteId) setActiveVacanteId(list[0].id);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // When active vacante changes, load its candidatos (via evaluaciones)
+  // When active vacante changes, load its candidatos
   useEffect(() => {
     if (!activeVacanteId) {
       setCandidatos([]);
       return;
     }
     (async () => {
-      const { data, error } = await supabase
-        .from("evaluaciones_ia")
-        .select(
-          "compatibilidad, recomendacion, resumen_ejecutivo, fortalezas, riesgos, competencias_detectadas, candidatos(id, nombre_completo)",
-        )
-        .eq("vacante_id", activeVacanteId)
-        .order("compatibilidad", { ascending: false })
-        .limit(30);
-      if (error) {
-        console.warn("[copilot] cargar evaluaciones:", error.message);
+      try {
+        const rows = await listCandidatosFn({ data: { vacanteId: activeVacanteId } });
+        setCandidatos(rows as CandidatoCtx[]);
+      } catch (e) {
+        console.warn("[copilot] cargar evaluaciones:", e instanceof Error ? e.message : e);
         setCandidatos([]);
-        return;
       }
-      const rows = (data ?? []) as Array<{
-        compatibilidad: number | null;
-        recomendacion: string | null;
-        resumen_ejecutivo: string | null;
-        fortalezas: string[] | null;
-        riesgos: string[] | null;
-        competencias_detectadas: string[] | null;
-        candidatos: { id: string; nombre_completo: string } | null;
-      }>;
-      setCandidatos(
-        rows
-          .filter((r) => r.candidatos)
-          .map((r) => ({
-            id: r.candidatos!.id,
-            nombre: r.candidatos!.nombre_completo,
-            compatibilidad: r.compatibilidad,
-            recomendacion: r.recomendacion,
-            resumen: r.resumen_ejecutivo,
-            fortalezas: r.fortalezas ?? [],
-            riesgos: r.riesgos ?? [],
-            competencias: r.competencias_detectadas ?? [],
-          })),
-      );
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeVacanteId]);
+
 
   // Auto scroll on new messages
   useEffect(() => {
@@ -465,18 +443,9 @@ function CopilotPage() {
     const target = candidatos.find((c) => c.id === candidatoId);
     if (!target) return;
     try {
-      const { data: sess } = await supabase.auth.getSession();
-      if (!sess.session) { toast.error("Inicia sesión para actualizar expedientes."); return; }
-      const { data: current } = await supabase
-        .from("candidatos")
-        .select("notas")
-        .eq("id", target.id)
-        .maybeSingle();
-      const prev = current?.notas ? `${current.notas}\n\n` : "";
       const stamp = new Date().toLocaleString("es-ES");
-      const nuevo = `${prev}[Copiloto IA · ${stamp}]\n${m.content}`;
-      const { error } = await supabase.from("candidatos").update({ notas: nuevo }).eq("id", target.id);
-      if (error) throw error;
+      const nota = `[Copiloto IA · ${stamp}]\n${m.content}`;
+      await appendNotaFn({ data: { candidatoId: target.id, nota } });
       toast.success(`Agregado al expediente de ${target.nombre}`);
       setExpedienteFor(null);
     } catch (e) {
@@ -484,6 +453,7 @@ function CopilotPage() {
       toast.error(err);
     }
   };
+
 
   const stageLabel = activeVacante?.estado
     ? activeVacante.estado.charAt(0).toUpperCase() + activeVacante.estado.slice(1).replaceAll("_", " ")
