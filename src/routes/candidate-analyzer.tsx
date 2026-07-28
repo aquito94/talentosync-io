@@ -1031,3 +1031,40 @@ function FilePreview({ file, onClose }: { file: CvFile; onClose: () => void }) {
     </div>
   );
 }
+
+function QuickResultModal({ result, onClose }: { result: QuickActionResult; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-background/80 p-4 backdrop-blur-sm" onClick={onClose}>
+      <div className="glass-panel relative w-full max-w-3xl overflow-hidden rounded-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-start justify-between gap-4 border-b border-border/60 p-5">
+          <div className="min-w-0">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-primary">Copiloto IA</div>
+            <h3 className="mt-1 text-lg font-semibold">{result.titulo}</h3>
+          </div>
+          <button onClick={onClose} className="rounded-lg border border-border/60 bg-surface/40 p-2 text-muted-foreground transition hover:bg-primary/10 hover:text-primary">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="max-h-[70vh] overflow-y-auto p-6 space-y-5">
+          {result.resumen && <p className="text-sm leading-relaxed text-muted-foreground">{result.resumen}</p>}
+          {result.secciones.map((s, i) => (
+            <div key={i}>
+              <div className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-primary">{s.titulo}</div>
+              <ul className="space-y-2">
+                {s.items.map((it, j) => (
+                  <li key={j} className="flex gap-2 rounded-lg border border-border/40 bg-surface/40 p-3 text-sm">
+                    <span className="text-primary">•</span>
+                    <div className="min-w-0">
+                      {it.candidato && <div className="text-xs font-semibold text-foreground">{it.candidato}</div>}
+                      <div className="text-sm text-muted-foreground">{it.texto}</div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
