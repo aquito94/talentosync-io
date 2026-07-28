@@ -145,6 +145,10 @@ function labelOf(v: Vacante | null): string {
 
 function CopilotPage() {
   const askCopilotFn = useServerFn(askCopilot);
+  const listVacantesFn = useServerFn(listVacantesForCopilot);
+  const listCandidatosFn = useServerFn(listCandidatosForVacante);
+  const appendNotaFn = useServerFn(appendCandidatoNota);
+
   const [vacantes, setVacantes] = useState<Vacante[]>([]);
   const [activeVacanteId, setActiveVacanteId] = useState<string | null>(null);
   const [candidatos, setCandidatos] = useState<CandidatoCtx[]>([]);
