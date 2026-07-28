@@ -362,11 +362,46 @@ function CopilotPage() {
   };
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+    if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
       e.preventDefault();
       void sendMessage(input);
     }
   };
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const onAttach = () => fileInputRef.current?.click();
+  const onFilePicked = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    e.target.value = "";
+    if (!f) return;
+    if (f.size > 200_000) { toast.error("El archivo supera 200 KB. Adjunta un fragmento más corto."); return; }
+    try {
+      const text = await f.text();
+      const preface = `Contenido adjunto (${f.name}):\n"""\n${text.slice(0, 12000)}\n"""\n\n`;
+      setInput((prev) => preface + prev);
+      composerRef.current?.focus();
+      toast.success(`Adjuntado: ${f.name}`);
+    } catch {
+      toast.error("No se pudo leer el archivo.");
+    }
+  };
+
+  const renameActive = () => {
+    if (!activeConv) return;
+    const next = window.prompt("Nuevo título de la conversación", activeConv.title);
+    if (!next) return;
+    setConversations((prev) =>
+      prev.map((c) => (c.id === activeConv.id ? { ...c, title: next.slice(0, 80), updatedAt: Date.now() } : c)),
+    );
+  };
+  const clearActive = () => {
+    if (!activeConv) return;
+    if (!window.confirm("¿Vaciar todos los mensajes de esta conversación?")) return;
+    setConversations((prev) =>
+      prev.map((c) => (c.id === activeConv.id ? { ...c, messages: [], updatedAt: Date.now() } : c)),
+    );
+  };
+  const [menuOpen, setMenuOpen] = useState(false);
 
   // Actions on AI messages
   const copyMsg = async (m: Msg) => {
@@ -421,23 +456,29 @@ function CopilotPage() {
     const body = encodeURIComponent(m.content);
     window.open(`mailto:?subject=${subj}&body=${body}`);
   };
-  const addToExpediente = async (m: Msg) => {
-    if (!bestCandidate) {
-      toast.error("No hay candidato de referencia para el expediente");
-      return;
-    }
+  const [expedienteFor, setExpedienteFor] = useState<Msg | null>(null);
+  const openExpediente = (m: Msg) => {
+    if (candidatos.length === 0) { toast.error("Analiza candidatos primero para agregar notas a un expediente."); return; }
+    setExpedienteFor(m);
+  };
+  const addToExpediente = async (m: Msg, candidatoId: string) => {
+    const target = candidatos.find((c) => c.id === candidatoId);
+    if (!target) return;
     try {
+      const { data: sess } = await supabase.auth.getSession();
+      if (!sess.session) { toast.error("Inicia sesión para actualizar expedientes."); return; }
       const { data: current } = await supabase
         .from("candidatos")
         .select("notas")
-        .eq("id", bestCandidate.id)
+        .eq("id", target.id)
         .maybeSingle();
       const prev = current?.notas ? `${current.notas}\n\n` : "";
       const stamp = new Date().toLocaleString("es-ES");
       const nuevo = `${prev}[Copiloto IA · ${stamp}]\n${m.content}`;
-      const { error } = await supabase.from("candidatos").update({ notas: nuevo }).eq("id", bestCandidate.id);
+      const { error } = await supabase.from("candidatos").update({ notas: nuevo }).eq("id", target.id);
       if (error) throw error;
-      toast.success(`Agregado al expediente de ${bestCandidate.nombre}`);
+      toast.success(`Agregado al expediente de ${target.nombre}`);
+      setExpedienteFor(null);
     } catch (e) {
       const err = e instanceof Error ? e.message : "No se pudo actualizar el expediente";
       toast.error(err);
@@ -557,9 +598,43 @@ function CopilotPage() {
               <span className="hidden items-center gap-1.5 rounded-full bg-success/15 px-3 py-1 text-[11px] font-semibold text-success sm:inline-flex">
                 <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse-glow" /> En línea
               </span>
-              <button className="rounded-xl border border-border-strong bg-surface/60 p-2 text-muted-foreground hover:text-foreground">
-                <MoreHorizontal className="h-4 w-4" />
-              </button>
+              <div className="relative">
+                <button
+                  onClick={() => setMenuOpen((v) => !v)}
+                  className="rounded-xl border border-border-strong bg-surface/60 p-2 text-muted-foreground hover:text-foreground"
+                  aria-label="Más acciones"
+                >
+                  <MoreHorizontal className="h-4 w-4" />
+                </button>
+                {menuOpen && (
+                  <>
+                    <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
+                    <div className="absolute right-0 top-full z-20 mt-2 w-56 overflow-hidden rounded-xl border border-border-strong bg-popover shadow-lg">
+                      <button
+                        onClick={() => { setMenuOpen(false); renameActive(); }}
+                        disabled={!activeConv}
+                        className="block w-full px-3 py-2 text-left text-xs text-foreground hover:bg-primary/10 disabled:opacity-50"
+                      >
+                        Renombrar conversación
+                      </button>
+                      <button
+                        onClick={() => { setMenuOpen(false); clearActive(); }}
+                        disabled={!activeConv || activeConv.messages.length === 0}
+                        className="block w-full px-3 py-2 text-left text-xs text-foreground hover:bg-primary/10 disabled:opacity-50"
+                      >
+                        Vaciar mensajes
+                      </button>
+                      <button
+                        onClick={() => { setMenuOpen(false); if (activeConv) deleteConv(activeConv.id); }}
+                        disabled={!activeConv}
+                        className="block w-full px-3 py-2 text-left text-xs text-destructive hover:bg-destructive/10 disabled:opacity-50"
+                      >
+                        Eliminar conversación
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 
@@ -608,7 +683,7 @@ function CopilotPage() {
                     onSave={() => toggleSave(m)}
                     onExport={() => void exportPdf(m)}
                     onSend={() => sendByMail(m)}
-                    onExpediente={() => void addToExpediente(m)}
+                    onExpediente={() => openExpediente(m)}
                   />
                 ),
               )}
@@ -620,7 +695,7 @@ function CopilotPage() {
           <div className="border-t border-border/60 bg-background/70 px-6 py-4 backdrop-blur-xl">
             <div className="mx-auto max-w-3xl">
               <div className="mb-2 flex flex-wrap gap-1.5">
-                {suggestedQueries.slice(0, 4).map((s) => (
+                {suggestedQueries.map((s) => (
                   <button
                     key={s}
                     onClick={() => void sendMessage(s)}
@@ -634,7 +709,8 @@ function CopilotPage() {
               <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-2 rounded-2xl border border-border-strong bg-surface/60 p-2 transition focus-within:border-primary/60 focus-within:shadow-glow">
                 <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-2">
                   <div className="flex items-center gap-1 pl-1">
-                    <button className="rounded-lg p-2 text-muted-foreground hover:bg-surface hover:text-foreground" title="Adjuntar">
+                    <input ref={fileInputRef} type="file" accept=".txt,.md,.json,.csv,text/*" className="hidden" onChange={onFilePicked} />
+                    <button onClick={onAttach} className="rounded-lg p-2 text-muted-foreground hover:bg-surface hover:text-foreground" title="Adjuntar texto (.txt, .md, .json, .csv)">
                       <Paperclip className="h-4 w-4" />
                     </button>
                   </div>
@@ -659,7 +735,7 @@ function CopilotPage() {
               </div>
               <div className="mt-2 flex items-center justify-between text-[10px] text-muted-foreground">
                 <span>Modelo: RecruitAI · Gemini 2.5 Flash · Contexto: {labelOf(activeVacante)}</span>
-                <span>Presiona <kbd className="rounded border border-border bg-surface/60 px-1">⌘</kbd>+<kbd className="rounded border border-border bg-surface/60 px-1">↵</kbd> para enviar</span>
+                <span>Presiona <kbd className="rounded border border-border bg-surface/60 px-1">↵</kbd> para enviar · <kbd className="rounded border border-border bg-surface/60 px-1">Shift</kbd>+<kbd className="rounded border border-border bg-surface/60 px-1">↵</kbd> nueva línea</span>
               </div>
             </div>
           </div>
@@ -762,6 +838,44 @@ function CopilotPage() {
           </div>
         </aside>
       </div>
+      {expedienteFor && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-background/80 p-4 backdrop-blur-sm" onClick={() => setExpedienteFor(null)}>
+          <div className="glass-panel w-full max-w-md overflow-hidden rounded-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="border-b border-border/60 p-5">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-primary">Agregar al expediente</div>
+              <h3 className="mt-1 text-base font-semibold">Selecciona el candidato</h3>
+            </div>
+            <div className="max-h-[60vh] overflow-y-auto p-3">
+              <ul className="space-y-1">
+                {candidatos.map((c) => (
+                  <li key={c.id}>
+                    <button
+                      onClick={() => void addToExpediente(expedienteFor, c.id)}
+                      className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-xl border border-border/60 bg-surface/40 p-3 text-left transition hover:border-primary/40 hover:bg-primary/5"
+                    >
+                      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg gradient-primary text-[11px] font-semibold text-white">
+                        {c.nombre.split(" ").map((n) => n[0]).slice(0, 2).join("")}
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block truncate text-sm font-medium">{c.nombre}</span>
+                        <span className="block text-[11px] text-muted-foreground">{c.recomendacion ?? "—"}</span>
+                      </span>
+                      <span className="rounded-md bg-success/15 px-2 py-0.5 text-[11px] font-semibold text-success">
+                        {c.compatibilidad ?? "—"}%
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="flex justify-end border-t border-border/60 p-3">
+              <button onClick={() => setExpedienteFor(null)} className="rounded-lg border border-border-strong bg-surface/60 px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground">
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </AppShell>
   );
 }
@@ -800,7 +914,7 @@ function UserBubble({ text }: { text: string }) {
         <div className="rounded-2xl rounded-br-md bg-primary px-4 py-3 text-sm leading-relaxed text-primary-foreground shadow-glow whitespace-pre-wrap">
           {text}
         </div>
-        <span className="pr-1 text-right text-[10px] text-muted-foreground">Álvaro · ahora</span>
+        <span className="pr-1 text-right text-[10px] text-muted-foreground">Tú · ahora</span>
       </div>
       <div className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-surface-elevated text-xs font-semibold">
         <User2 className="h-4 w-4" />
