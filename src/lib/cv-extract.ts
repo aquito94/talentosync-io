@@ -1,11 +1,14 @@
 // Client-only CV text extraction (PDF via pdfjs-dist, DOCX via mammoth).
 // Both libs run in the browser; we lazy-import to keep bundle small.
 
+// @ts-expect-error - no bundled types for the browser entry
+import * as mammothBrowser from "mammoth/mammoth.browser";
+// @ts-expect-error - Vite ?url import
+import pdfWorkerSrc from "pdfjs-dist/build/pdf.worker.min.mjs?url";
+
 async function extractPdf(file: File): Promise<string> {
   const pdfjs = await import("pdfjs-dist");
-  // Point worker to the ESM worker bundled by Vite
-  const workerSrc = (await import("pdfjs-dist/build/pdf.worker.min.mjs?url")).default;
-  (pdfjs as unknown as { GlobalWorkerOptions: { workerSrc: string } }).GlobalWorkerOptions.workerSrc = workerSrc;
+  (pdfjs as unknown as { GlobalWorkerOptions: { workerSrc: string } }).GlobalWorkerOptions.workerSrc = pdfWorkerSrc as string;
   const buf = await file.arrayBuffer();
   const pdf = await pdfjs.getDocument({ data: buf }).promise;
   const parts: string[] = [];
@@ -21,7 +24,7 @@ async function extractPdf(file: File): Promise<string> {
 }
 
 async function extractDocx(file: File): Promise<string> {
-  const mod = (await import(/* @vite-ignore */ "mammoth/mammoth.browser")) as unknown as {
+  const mod = mammothBrowser as unknown as {
     extractRawText: (o: { arrayBuffer: ArrayBuffer }) => Promise<{ value: string }>;
   };
   const buf = await file.arrayBuffer();
