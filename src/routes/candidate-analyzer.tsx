@@ -118,6 +118,7 @@ function CandidateAnalyzerPage() {
   useEffect(() => {
     (async () => {
       setLoadingVacancies(true);
+      await ensureSession();
       const { data, error } = await supabase
         .from("vacantes")
         .select("id, cargo, empresa, ciudad, departamento, modalidad, nivel, estado, created_at")
@@ -127,6 +128,7 @@ function CandidateAnalyzerPage() {
         const list = (data ?? []) as Vacancy[];
         setVacancies(list);
         if (list.length && !vacancyId) setVacancyId(list[0].id);
+        if (!list.length) toast.info("No hay vacantes guardadas. Crea una en 'Generador Inteligente de Vacantes'.");
       }
       setLoadingVacancies(false);
     })();
