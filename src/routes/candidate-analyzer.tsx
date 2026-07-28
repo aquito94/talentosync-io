@@ -54,33 +54,7 @@ type CvFile = {
   status: "listo" | "analizando" | "analizado" | "error";
 };
 
-type Analysis = {
-  id: string;
-  fileId: string;
-  candidato: string;
-  cargoActual: string;
-  empresaActual: string;
-  compatibilidad: number;
-  recomendacion: "A+" | "A" | "B" | "C";
-  nivelRecomendacion: string;
-  competenciasBadges: string[];
-  resumen: string;
-  experiencia: string[];
-  educacion: string[];
-  competenciasTecnicas: { nombre: string; nivel: number }[];
-  competenciasBlandas: string[];
-  idiomas: string[];
-  certificaciones: string[];
-  fortalezas: string[];
-  riesgos: string[];
-  brechas: string[];
-  preguntasStar: string[];
-  justificacion: string;
-  liderazgo: number;
-  estabilidad: number;
-  ajusteCultural: number;
-  aniosExperiencia: number;
-};
+type Analysis = AnalysisResult & { id: string; fileId: string };
 
 const QUICK_ACTIONS = [
   { icon: Cpu, title: "Detectar competencias ocultas", desc: "Habilidades transferibles no evidentes en el CV." },
