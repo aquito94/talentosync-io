@@ -649,7 +649,7 @@ function CopilotPage() {
                     onSave={() => toggleSave(m)}
                     onExport={() => void exportPdf(m)}
                     onSend={() => sendByMail(m)}
-                    onExpediente={() => void addToExpediente(m)}
+                    onExpediente={() => openExpediente(m)}
                   />
                 ),
               )}
