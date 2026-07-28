@@ -56,12 +56,12 @@ type CvFile = {
 
 type Analysis = AnalysisResult & { id: string; fileId: string };
 
-const QUICK_ACTIONS = [
-  { icon: Cpu, title: "Detectar competencias ocultas", desc: "Habilidades transferibles no evidentes en el CV." },
-  { icon: Scale, title: "Comparar candidatos", desc: "Matriz de decisión ponderada." },
-  { icon: ShieldAlert, title: "Detectar riesgos", desc: "Gaps, rotación alta o sobrecalificación." },
-  { icon: MessageSquareQuote, title: "Generar preguntas STAR", desc: "Personalizadas por competencia." },
-  { icon: Heart, title: "Calcular ajuste cultural", desc: "Fit con los valores de la empresa." },
+const QUICK_ACTIONS: { key: QuickActionKey; icon: typeof Cpu; title: string; desc: string }[] = [
+  { key: "hidden", icon: Cpu, title: "Detectar competencias ocultas", desc: "Habilidades transferibles no evidentes en el CV." },
+  { key: "compare", icon: Scale, title: "Comparar candidatos", desc: "Análisis ejecutivo con ranking recomendado." },
+  { key: "risks", icon: ShieldAlert, title: "Detectar riesgos", desc: "Gaps, rotación alta o sobrecalificación." },
+  { key: "star", icon: MessageSquareQuote, title: "Generar preguntas STAR", desc: "Personalizadas por competencia." },
+  { key: "cultural", icon: Heart, title: "Calcular ajuste cultural", desc: "Fit con los valores de la empresa." },
 ];
 
 const PHASES = [
