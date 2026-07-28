@@ -3,7 +3,6 @@
 
 // @ts-expect-error - no bundled types for the browser entry
 import * as mammothBrowser from "mammoth/mammoth.browser";
-// @ts-expect-error - Vite ?url import
 import pdfWorkerSrc from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 
 async function extractPdf(file: File): Promise<string> {
