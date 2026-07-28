@@ -167,9 +167,16 @@ function CopilotPage() {
     if (savedActive && list.some((c) => c.id === savedActive)) setActiveConvId(savedActive);
   }, []);
 
-  // Load vacantes from Supabase
+  // Load vacantes from Supabase (ensure anon session so RLS allows read)
   useEffect(() => {
     (async () => {
+      const { data: sess } = await supabase.auth.getSession();
+      if (!sess.session) {
+        const { error: signErr } = await supabase.auth.signInAnonymously();
+        if (signErr) {
+          console.warn("[copilot] sesión anónima:", signErr.message);
+        }
+      }
       const { data, error } = await supabase
         .from("vacantes")
         .select("id, cargo, empresa, ciudad, nivel, modalidad, estado, perfil_ideal, descripcion, objetivo_cargo, competencias, updated_at")
@@ -185,6 +192,7 @@ function CopilotPage() {
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
 
   // When active vacante changes, load its candidatos (via evaluaciones)
   useEffect(() => {
