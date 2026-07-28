@@ -443,18 +443,9 @@ function CopilotPage() {
     const target = candidatos.find((c) => c.id === candidatoId);
     if (!target) return;
     try {
-      const { data: sess } = await supabase.auth.getSession();
-      if (!sess.session) { toast.error("Inicia sesión para actualizar expedientes."); return; }
-      const { data: current } = await supabase
-        .from("candidatos")
-        .select("notas")
-        .eq("id", target.id)
-        .maybeSingle();
-      const prev = current?.notas ? `${current.notas}\n\n` : "";
       const stamp = new Date().toLocaleString("es-ES");
-      const nuevo = `${prev}[Copiloto IA · ${stamp}]\n${m.content}`;
-      const { error } = await supabase.from("candidatos").update({ notas: nuevo }).eq("id", target.id);
-      if (error) throw error;
+      const nota = `[Copiloto IA · ${stamp}]\n${m.content}`;
+      await appendNotaFn({ data: { candidatoId: target.id, nota } });
       toast.success(`Agregado al expediente de ${target.nombre}`);
       setExpedienteFor(null);
     } catch (e) {
@@ -462,6 +453,7 @@ function CopilotPage() {
       toast.error(err);
     }
   };
+
 
   const stageLabel = activeVacante?.estado
     ? activeVacante.estado.charAt(0).toUpperCase() + activeVacante.estado.slice(1).replaceAll("_", " ")
