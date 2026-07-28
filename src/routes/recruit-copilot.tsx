@@ -362,11 +362,46 @@ function CopilotPage() {
   };
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+    if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
       e.preventDefault();
       void sendMessage(input);
     }
   };
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const onAttach = () => fileInputRef.current?.click();
+  const onFilePicked = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    e.target.value = "";
+    if (!f) return;
+    if (f.size > 200_000) { toast.error("El archivo supera 200 KB. Adjunta un fragmento más corto."); return; }
+    try {
+      const text = await f.text();
+      const preface = `Contenido adjunto (${f.name}):\n"""\n${text.slice(0, 12000)}\n"""\n\n`;
+      setInput((prev) => preface + prev);
+      composerRef.current?.focus();
+      toast.success(`Adjuntado: ${f.name}`);
+    } catch {
+      toast.error("No se pudo leer el archivo.");
+    }
+  };
+
+  const renameActive = () => {
+    if (!activeConv) return;
+    const next = window.prompt("Nuevo título de la conversación", activeConv.title);
+    if (!next) return;
+    setConversations((prev) =>
+      prev.map((c) => (c.id === activeConv.id ? { ...c, title: next.slice(0, 80), updatedAt: Date.now() } : c)),
+    );
+  };
+  const clearActive = () => {
+    if (!activeConv) return;
+    if (!window.confirm("¿Vaciar todos los mensajes de esta conversación?")) return;
+    setConversations((prev) =>
+      prev.map((c) => (c.id === activeConv.id ? { ...c, messages: [], updatedAt: Date.now() } : c)),
+    );
+  };
+  const [menuOpen, setMenuOpen] = useState(false);
 
   // Actions on AI messages
   const copyMsg = async (m: Msg) => {
