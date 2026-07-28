@@ -592,6 +592,7 @@ function CandidateAnalyzerPage() {
       )}
       {compareOpen && <CompareModal analyses={analyses.slice(0, 5)} onClose={() => setCompareOpen(false)} />}
       {previewFile && <FilePreview file={previewFile} onClose={() => setPreviewFile(null)} />}
+      {quickResult && <QuickResultModal result={quickResult} onClose={() => setQuickResult(null)} />}
     </AppShell>
   );
 }
