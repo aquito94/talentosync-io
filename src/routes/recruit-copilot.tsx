@@ -661,7 +661,7 @@ function CopilotPage() {
           <div className="border-t border-border/60 bg-background/70 px-6 py-4 backdrop-blur-xl">
             <div className="mx-auto max-w-3xl">
               <div className="mb-2 flex flex-wrap gap-1.5">
-                {suggestedQueries.slice(0, 4).map((s) => (
+                {suggestedQueries.map((s) => (
                   <button
                     key={s}
                     onClick={() => void sendMessage(s)}
@@ -675,7 +675,8 @@ function CopilotPage() {
               <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-2 rounded-2xl border border-border-strong bg-surface/60 p-2 transition focus-within:border-primary/60 focus-within:shadow-glow">
                 <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-2">
                   <div className="flex items-center gap-1 pl-1">
-                    <button className="rounded-lg p-2 text-muted-foreground hover:bg-surface hover:text-foreground" title="Adjuntar">
+                    <input ref={fileInputRef} type="file" accept=".txt,.md,.json,.csv,text/*" className="hidden" onChange={onFilePicked} />
+                    <button onClick={onAttach} className="rounded-lg p-2 text-muted-foreground hover:bg-surface hover:text-foreground" title="Adjuntar texto (.txt, .md, .json, .csv)">
                       <Paperclip className="h-4 w-4" />
                     </button>
                   </div>
@@ -700,7 +701,7 @@ function CopilotPage() {
               </div>
               <div className="mt-2 flex items-center justify-between text-[10px] text-muted-foreground">
                 <span>Modelo: RecruitAI · Gemini 2.5 Flash · Contexto: {labelOf(activeVacante)}</span>
-                <span>Presiona <kbd className="rounded border border-border bg-surface/60 px-1">⌘</kbd>+<kbd className="rounded border border-border bg-surface/60 px-1">↵</kbd> para enviar</span>
+                <span>Presiona <kbd className="rounded border border-border bg-surface/60 px-1">↵</kbd> para enviar · <kbd className="rounded border border-border bg-surface/60 px-1">Shift</kbd>+<kbd className="rounded border border-border bg-surface/60 px-1">↵</kbd> nueva línea</span>
               </div>
             </div>
           </div>
