@@ -800,7 +800,7 @@ function UserBubble({ text }: { text: string }) {
         <div className="rounded-2xl rounded-br-md bg-primary px-4 py-3 text-sm leading-relaxed text-primary-foreground shadow-glow whitespace-pre-wrap">
           {text}
         </div>
-        <span className="pr-1 text-right text-[10px] text-muted-foreground">Álvaro · ahora</span>
+        <span className="pr-1 text-right text-[10px] text-muted-foreground">Tú · ahora</span>
       </div>
       <div className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-surface-elevated text-xs font-semibold">
         <User2 className="h-4 w-4" />
