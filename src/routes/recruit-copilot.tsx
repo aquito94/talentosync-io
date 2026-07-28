@@ -598,9 +598,43 @@ function CopilotPage() {
               <span className="hidden items-center gap-1.5 rounded-full bg-success/15 px-3 py-1 text-[11px] font-semibold text-success sm:inline-flex">
                 <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse-glow" /> En línea
               </span>
-              <button className="rounded-xl border border-border-strong bg-surface/60 p-2 text-muted-foreground hover:text-foreground">
-                <MoreHorizontal className="h-4 w-4" />
-              </button>
+              <div className="relative">
+                <button
+                  onClick={() => setMenuOpen((v) => !v)}
+                  className="rounded-xl border border-border-strong bg-surface/60 p-2 text-muted-foreground hover:text-foreground"
+                  aria-label="Más acciones"
+                >
+                  <MoreHorizontal className="h-4 w-4" />
+                </button>
+                {menuOpen && (
+                  <>
+                    <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
+                    <div className="absolute right-0 top-full z-20 mt-2 w-56 overflow-hidden rounded-xl border border-border-strong bg-popover shadow-lg">
+                      <button
+                        onClick={() => { setMenuOpen(false); renameActive(); }}
+                        disabled={!activeConv}
+                        className="block w-full px-3 py-2 text-left text-xs text-foreground hover:bg-primary/10 disabled:opacity-50"
+                      >
+                        Renombrar conversación
+                      </button>
+                      <button
+                        onClick={() => { setMenuOpen(false); clearActive(); }}
+                        disabled={!activeConv || activeConv.messages.length === 0}
+                        className="block w-full px-3 py-2 text-left text-xs text-foreground hover:bg-primary/10 disabled:opacity-50"
+                      >
+                        Vaciar mensajes
+                      </button>
+                      <button
+                        onClick={() => { setMenuOpen(false); if (activeConv) deleteConv(activeConv.id); }}
+                        disabled={!activeConv}
+                        className="block w-full px-3 py-2 text-left text-xs text-destructive hover:bg-destructive/10 disabled:opacity-50"
+                      >
+                        Eliminar conversación
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 
