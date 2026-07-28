@@ -15,6 +15,8 @@ import {
   exportEvaluationPDF, exportEvaluationDOCX, evaluationToText,
   type EvaluationExport,
 } from "@/lib/evaluation-export";
+import { analyzeCV, runQuickAction, type AnalysisResult, type QuickActionKey, type QuickActionResult } from "@/lib/candidate-analyzer.functions";
+import { extractCvText } from "@/lib/cv-extract";
 
 export const Route = createFileRoute("/candidate-analyzer")({
   head: () => ({
