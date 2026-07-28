@@ -37,6 +37,12 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { askCopilot, type CopilotContext } from "@/lib/copilot.functions";
+import {
+  listVacantesForCopilot,
+  listCandidatosForVacante,
+  appendCandidatoNota,
+} from "@/lib/copilot-data.functions";
+
 
 export const Route = createFileRoute("/recruit-copilot")({
   head: () => ({
