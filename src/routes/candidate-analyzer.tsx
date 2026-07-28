@@ -65,95 +65,15 @@ const QUICK_ACTIONS: { key: QuickActionKey; icon: typeof Cpu; title: string; des
 ];
 
 const PHASES = [
-  "Leyendo CV...",
-  "Extrayendo competencias...",
+  "Leyendo archivos...",
+  "Extrayendo texto de los CV...",
   "Comparando con la vacante...",
-  "Calculando compatibilidad...",
+  "Evaluando compatibilidad con IA...",
   "Generando recomendaciones...",
 ];
 
 const MAX_FILES = 20;
 const ACCEPTED = [".pdf", ".docx", "application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
-
-// ============ Simulación determinista ============
-function hash(s: string): number {
-  let h = 2166136261;
-  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
-  return Math.abs(h);
-}
-function pick<T>(arr: T[], seed: number, n: number): T[] {
-  const out: T[] = []; const used = new Set<number>();
-  for (let i = 0; i < n && out.length < arr.length; i++) {
-    const idx = (seed + i * 31) % arr.length;
-    if (!used.has(idx)) { used.add(idx); out.push(arr[idx]); }
-  }
-  return out;
-}
-
-const NOMBRES = ["Elena Ruiz Martín", "David Chen Herrera", "Aisha Khan", "Mateo Silva", "Nina Larsson", "Julien Petit", "Carla Domínguez", "Rafael Ortega", "Sofía Navarro", "Kenji Watanabe", "María López", "Andrés Morales", "Valentina Ríos", "Sebastián Cruz", "Camila Vega", "Diego Restrepo", "Lucía Pardo", "Tomás Aguilar", "Isabel Fuentes", "Nicolás Bermúdez"];
-const CARGOS = ["Senior Frontend Engineer", "Fullstack Engineer", "Product Designer", "Engineering Manager", "Data Analyst", "UX Researcher", "DevOps Engineer", "Mobile Engineer"];
-const EMPRESAS = ["Nova Retail", "Globant", "Rappi", "Mercado Libre", "Nubank", "Kavak", "Platzi", "Belvo"];
-const SKILLS = ["React", "TypeScript", "Node.js", "GraphQL", "AWS", "Kubernetes", "PostgreSQL", "Python", "Next.js", "Design Systems", "Tailwind", "Testing", "Liderazgo técnico", "Producto"];
-const BLANDAS = ["Comunicación", "Trabajo en equipo", "Pensamiento crítico", "Adaptabilidad", "Resolución de problemas", "Liderazgo", "Empatía"];
-const IDIOMAS = ["Español (Nativo)", "Inglés (C1)", "Portugués (B2)", "Francés (B1)"];
-const CERTS = ["AWS Solutions Architect", "Scrum Master (PSM I)", "Google UX Design", "Kubernetes CKA"];
-
-function simulate(file: CvFile, vacancy: Vacancy | null): Analysis {
-  const seed = hash(file.name);
-  const compatibilidad = 55 + (seed % 45);
-  const rec: Analysis["recomendacion"] = compatibilidad >= 90 ? "A+" : compatibilidad >= 80 ? "A" : compatibilidad >= 70 ? "B" : "C";
-  const nombre = NOMBRES[seed % NOMBRES.length];
-  const cargoActual = CARGOS[(seed >> 3) % CARGOS.length];
-  const empresaActual = EMPRESAS[(seed >> 5) % EMPRESAS.length];
-  const skills = pick(SKILLS, seed, 5);
-  const anios = 2 + (seed % 12);
-  const cargoVac = vacancy?.cargo ?? "la vacante";
-  return {
-    id: file.id, fileId: file.id, candidato: nombre, cargoActual, empresaActual, compatibilidad,
-    recomendacion: rec,
-    nivelRecomendacion: rec === "A+" ? "Altamente recomendado" : rec === "A" ? "Recomendado" : rec === "B" ? "Considerar" : "No recomendado",
-    competenciasBadges: skills,
-    resumen: `${nombre} suma ${anios} años de experiencia como ${cargoActual} en ${empresaActual}. Perfil compatible con ${cargoVac} por dominio técnico, trayectoria y capacidad de liderazgo.`,
-    experiencia: [
-      `${cargoActual} — ${empresaActual} · ${anios} años`,
-      `Semi Senior — ${EMPRESAS[(seed >> 7) % EMPRESAS.length]} · 3 años`,
-      `Junior — ${EMPRESAS[(seed >> 9) % EMPRESAS.length]} · 2 años`,
-    ],
-    educacion: [
-      `Ingeniería de Sistemas — Universidad Nacional`,
-      `Especialización en Arquitectura de Software — ${2015 + (seed % 8)}`,
-    ],
-    competenciasTecnicas: skills.map((s, i) => ({ nombre: s, nivel: 70 + ((seed + i * 7) % 30) })),
-    competenciasBlandas: pick(BLANDAS, seed, 4),
-    idiomas: pick(IDIOMAS, seed, 2),
-    certificaciones: pick(CERTS, seed, 2),
-    fortalezas: [
-      "Sólida arquitectura y buenas prácticas",
-      "Mentoría y liderazgo técnico",
-      "Comunicación clara con stakeholders",
-      "Orientación a producto y negocio",
-    ],
-    riesgos: [
-      compatibilidad < 80 ? "Experiencia limitada en el stack requerido" : "Duración corta en los últimos 2 roles",
-      "Sin experiencia previa en el sector",
-    ],
-    brechas: [
-      `Falta experiencia demostrable en ${SKILLS[(seed >> 11) % SKILLS.length]}`,
-      `Nivel intermedio en ${SKILLS[(seed >> 13) % SKILLS.length]}, la vacante pide avanzado`,
-    ],
-    preguntasStar: [
-      `Cuéntame un proyecto complejo como ${cargoActual} y qué decisiones técnicas tomaste.`,
-      `Describe una situación en la que lideraste técnicamente a un equipo. ¿Cuál fue el resultado?`,
-      `¿Cómo abordaste una mejora significativa de rendimiento o calidad? Cuantifica el impacto.`,
-      `Cuenta un conflicto con producto o negocio: tarea, acción y resultado.`,
-    ],
-    justificacion: `Con ${compatibilidad}% de compatibilidad respecto a "${cargoVac}", el perfil ${rec === "A+" || rec === "A" ? "avanza a entrevista técnica" : "podría considerarse tras validar brechas"}. Trayectoria consistente y competencias core alineadas.`,
-    liderazgo: 60 + ((seed >> 2) % 40),
-    estabilidad: 55 + ((seed >> 4) % 45),
-    ajusteCultural: 65 + ((seed >> 6) % 35),
-    aniosExperiencia: anios,
-  };
-}
 
 function toEvalExport(a: Analysis, v: Vacancy | null): EvaluationExport {
   return {
