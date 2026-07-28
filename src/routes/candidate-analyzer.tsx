@@ -257,7 +257,7 @@ function CandidateAnalyzerPage() {
         ajuste_cultural: a.ajusteCultural,
         preguntas_sugeridas: a.preguntasStar.map((p) => ({ pregunta: p })),
         recomendacion: `${a.recomendacion} · ${a.nivelRecomendacion}`,
-        modelo_ia: "simulacion-v1",
+        modelo_ia: "gemini-2.5-pro",
       });
       if (eErr) throw eErr;
       toast.success(`Evaluación de ${a.candidato} guardada.`);
