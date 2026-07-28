@@ -21,11 +21,11 @@ async function extractPdf(file: File): Promise<string> {
 }
 
 async function extractDocx(file: File): Promise<string> {
-  const mammoth = await import("mammoth/mammoth.browser");
-  const buf = await file.arrayBuffer();
-  const r = await (mammoth as unknown as {
+  const mod = (await import(/* @vite-ignore */ "mammoth/mammoth.browser")) as unknown as {
     extractRawText: (o: { arrayBuffer: ArrayBuffer }) => Promise<{ value: string }>;
-  }).extractRawText({ arrayBuffer: buf });
+  };
+  const buf = await file.arrayBuffer();
+  const r = await mod.extractRawText({ arrayBuffer: buf });
   return (r.value ?? "").replace(/\s+/g, " ").trim();
 }
 
