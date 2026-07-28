@@ -154,22 +154,86 @@ function CandidateAnalyzerPage() {
     if (!vacancy) { toast.error("Selecciona una vacante primero."); return; }
     if (!files.length) { toast.error("Sube al menos un CV."); return; }
     setAnalyses([]);
-    for (let i = 0; i < PHASES.length; i++) {
-      setPhaseIdx(i);
-      const start = (i / PHASES.length) * 100;
-      const end = ((i + 1) / PHASES.length) * 100;
-      const steps = 20;
-      for (let s = 0; s <= steps; s++) {
-        await new Promise((r) => setTimeout(r, 45));
-        setProgress(start + ((end - start) * s) / steps);
+    setPhaseIdx(0); setProgress(2);
+    const total = files.length;
+    const vacCtx = {
+      cargo: vacancy.cargo, empresa: vacancy.empresa,
+      ciudad: vacancy.ciudad ?? undefined, departamento: vacancy.departamento ?? undefined,
+      modalidad: vacancy.modalidad ?? undefined, nivel: vacancy.nivel ?? undefined,
+    };
+
+    // Phase 1-2: extract text from each file
+    setPhaseIdx(1);
+    const texts: { file: CvFile; text: string; error?: string }[] = [];
+    for (let i = 0; i < files.length; i++) {
+      const f = files[i];
+      setFiles((prev) => prev.map((x) => x.id === f.id ? { ...x, status: "analizando" } : x));
+      try {
+        const text = await extractCvText(f.file);
+        texts.push({ file: f, text });
+      } catch (e) {
+        texts.push({ file: f, text: "", error: (e as Error).message });
+        setFiles((prev) => prev.map((x) => x.id === f.id ? { ...x, status: "error" } : x));
       }
+      setProgress(((i + 1) / total) * 30);
     }
-    const results = files.map((f) => simulate(f, vacancy)).sort((a, b) => b.compatibilidad - a.compatibilidad);
+
+    // Phase 3-4: run AI evaluation in parallel
+    setPhaseIdx(3);
+    const results: Analysis[] = [];
+    let done = 0;
+    await Promise.all(texts.map(async (t) => {
+      if (t.error || !t.text) {
+        toast.error(`${t.file.name}: ${t.error ?? "sin texto extraído"}`);
+        done++; setProgress(30 + (done / total) * 65);
+        return;
+      }
+      try {
+        const r = await analyzeCV({ data: { fileName: t.file.name, text: t.text, vacancy: vacCtx } });
+        results.push({ ...r, id: t.file.id, fileId: t.file.id });
+        setFiles((prev) => prev.map((x) => x.id === t.file.id ? { ...x, status: "analizado" } : x));
+      } catch (e) {
+        toast.error(`${t.file.name}: ${(e as Error).message}`);
+        setFiles((prev) => prev.map((x) => x.id === t.file.id ? { ...x, status: "error" } : x));
+      } finally {
+        done++; setProgress(30 + (done / total) * 65);
+      }
+    }));
+
+    // Phase 5: sort
+    setPhaseIdx(4); setProgress(98);
+    results.sort((a, b) => b.compatibilidad - a.compatibilidad);
     setAnalyses(results);
-    setFiles((prev) => prev.map((f) => ({ ...f, status: "analizado" as const })));
     setPhaseIdx(-1); setProgress(0);
-    toast.success(`Análisis completado — ${results.length} candidatos evaluados.`);
+    if (results.length === 0) toast.error("No se pudo evaluar ningún CV.");
+    else toast.success(`Análisis completado — ${results.length} candidato${results.length === 1 ? "" : "s"} evaluado${results.length === 1 ? "" : "s"}.`);
     setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+  };
+
+  // Quick action state
+  const [quickResult, setQuickResult] = useState<QuickActionResult | null>(null);
+  const [quickLoading, setQuickLoading] = useState<QuickActionKey | null>(null);
+  const runAction = async (key: QuickActionKey) => {
+    if (key === "compare") { setCompareOpen(true); return; }
+    if (analyses.length === 0) { toast.error("Primero analiza al menos un candidato."); return; }
+    if (!vacancy) { toast.error("Selecciona una vacante primero."); return; }
+    setQuickLoading(key);
+    try {
+      const result = await runQuickAction({
+        data: {
+          action: key,
+          vacancy: { cargo: vacancy.cargo, empresa: vacancy.empresa, ciudad: vacancy.ciudad ?? undefined, modalidad: vacancy.modalidad ?? undefined, nivel: vacancy.nivel ?? undefined },
+          candidates: analyses.map((a) => ({
+            candidato: a.candidato, cargoActual: a.cargoActual, resumen: a.resumen,
+            competencias: a.competenciasBadges, fortalezas: a.fortalezas, riesgos: a.riesgos,
+            compatibilidad: a.compatibilidad, aniosExperiencia: a.aniosExperiencia,
+          })),
+        },
+      });
+      setQuickResult(result);
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally { setQuickLoading(null); }
   };
 
   const saveEvaluation = async (a: Analysis) => {
