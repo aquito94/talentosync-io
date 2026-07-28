@@ -15,6 +15,8 @@ import {
   exportEvaluationPDF, exportEvaluationDOCX, evaluationToText,
   type EvaluationExport,
 } from "@/lib/evaluation-export";
+import { analyzeCV, runQuickAction, type AnalysisResult, type QuickActionKey, type QuickActionResult } from "@/lib/candidate-analyzer.functions";
+import { extractCvText } from "@/lib/cv-extract";
 
 export const Route = createFileRoute("/candidate-analyzer")({
   head: () => ({
@@ -52,132 +54,26 @@ type CvFile = {
   status: "listo" | "analizando" | "analizado" | "error";
 };
 
-type Analysis = {
-  id: string;
-  fileId: string;
-  candidato: string;
-  cargoActual: string;
-  empresaActual: string;
-  compatibilidad: number;
-  recomendacion: "A+" | "A" | "B" | "C";
-  nivelRecomendacion: string;
-  competenciasBadges: string[];
-  resumen: string;
-  experiencia: string[];
-  educacion: string[];
-  competenciasTecnicas: { nombre: string; nivel: number }[];
-  competenciasBlandas: string[];
-  idiomas: string[];
-  certificaciones: string[];
-  fortalezas: string[];
-  riesgos: string[];
-  brechas: string[];
-  preguntasStar: string[];
-  justificacion: string;
-  liderazgo: number;
-  estabilidad: number;
-  ajusteCultural: number;
-  aniosExperiencia: number;
-};
+type Analysis = AnalysisResult & { id: string; fileId: string };
 
-const QUICK_ACTIONS = [
-  { icon: Cpu, title: "Detectar competencias ocultas", desc: "Habilidades transferibles no evidentes en el CV." },
-  { icon: Scale, title: "Comparar candidatos", desc: "Matriz de decisión ponderada." },
-  { icon: ShieldAlert, title: "Detectar riesgos", desc: "Gaps, rotación alta o sobrecalificación." },
-  { icon: MessageSquareQuote, title: "Generar preguntas STAR", desc: "Personalizadas por competencia." },
-  { icon: Heart, title: "Calcular ajuste cultural", desc: "Fit con los valores de la empresa." },
+const QUICK_ACTIONS: { key: QuickActionKey; icon: typeof Cpu; title: string; desc: string }[] = [
+  { key: "hidden", icon: Cpu, title: "Detectar competencias ocultas", desc: "Habilidades transferibles no evidentes en el CV." },
+  { key: "compare", icon: Scale, title: "Comparar candidatos", desc: "Análisis ejecutivo con ranking recomendado." },
+  { key: "risks", icon: ShieldAlert, title: "Detectar riesgos", desc: "Gaps, rotación alta o sobrecalificación." },
+  { key: "star", icon: MessageSquareQuote, title: "Generar preguntas STAR", desc: "Personalizadas por competencia." },
+  { key: "cultural", icon: Heart, title: "Calcular ajuste cultural", desc: "Fit con los valores de la empresa." },
 ];
 
 const PHASES = [
-  "Leyendo CV...",
-  "Extrayendo competencias...",
+  "Leyendo archivos...",
+  "Extrayendo texto de los CV...",
   "Comparando con la vacante...",
-  "Calculando compatibilidad...",
+  "Evaluando compatibilidad con IA...",
   "Generando recomendaciones...",
 ];
 
 const MAX_FILES = 20;
 const ACCEPTED = [".pdf", ".docx", "application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
-
-// ============ Simulación determinista ============
-function hash(s: string): number {
-  let h = 2166136261;
-  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
-  return Math.abs(h);
-}
-function pick<T>(arr: T[], seed: number, n: number): T[] {
-  const out: T[] = []; const used = new Set<number>();
-  for (let i = 0; i < n && out.length < arr.length; i++) {
-    const idx = (seed + i * 31) % arr.length;
-    if (!used.has(idx)) { used.add(idx); out.push(arr[idx]); }
-  }
-  return out;
-}
-
-const NOMBRES = ["Elena Ruiz Martín", "David Chen Herrera", "Aisha Khan", "Mateo Silva", "Nina Larsson", "Julien Petit", "Carla Domínguez", "Rafael Ortega", "Sofía Navarro", "Kenji Watanabe", "María López", "Andrés Morales", "Valentina Ríos", "Sebastián Cruz", "Camila Vega", "Diego Restrepo", "Lucía Pardo", "Tomás Aguilar", "Isabel Fuentes", "Nicolás Bermúdez"];
-const CARGOS = ["Senior Frontend Engineer", "Fullstack Engineer", "Product Designer", "Engineering Manager", "Data Analyst", "UX Researcher", "DevOps Engineer", "Mobile Engineer"];
-const EMPRESAS = ["Nova Retail", "Globant", "Rappi", "Mercado Libre", "Nubank", "Kavak", "Platzi", "Belvo"];
-const SKILLS = ["React", "TypeScript", "Node.js", "GraphQL", "AWS", "Kubernetes", "PostgreSQL", "Python", "Next.js", "Design Systems", "Tailwind", "Testing", "Liderazgo técnico", "Producto"];
-const BLANDAS = ["Comunicación", "Trabajo en equipo", "Pensamiento crítico", "Adaptabilidad", "Resolución de problemas", "Liderazgo", "Empatía"];
-const IDIOMAS = ["Español (Nativo)", "Inglés (C1)", "Portugués (B2)", "Francés (B1)"];
-const CERTS = ["AWS Solutions Architect", "Scrum Master (PSM I)", "Google UX Design", "Kubernetes CKA"];
-
-function simulate(file: CvFile, vacancy: Vacancy | null): Analysis {
-  const seed = hash(file.name);
-  const compatibilidad = 55 + (seed % 45);
-  const rec: Analysis["recomendacion"] = compatibilidad >= 90 ? "A+" : compatibilidad >= 80 ? "A" : compatibilidad >= 70 ? "B" : "C";
-  const nombre = NOMBRES[seed % NOMBRES.length];
-  const cargoActual = CARGOS[(seed >> 3) % CARGOS.length];
-  const empresaActual = EMPRESAS[(seed >> 5) % EMPRESAS.length];
-  const skills = pick(SKILLS, seed, 5);
-  const anios = 2 + (seed % 12);
-  const cargoVac = vacancy?.cargo ?? "la vacante";
-  return {
-    id: file.id, fileId: file.id, candidato: nombre, cargoActual, empresaActual, compatibilidad,
-    recomendacion: rec,
-    nivelRecomendacion: rec === "A+" ? "Altamente recomendado" : rec === "A" ? "Recomendado" : rec === "B" ? "Considerar" : "No recomendado",
-    competenciasBadges: skills,
-    resumen: `${nombre} suma ${anios} años de experiencia como ${cargoActual} en ${empresaActual}. Perfil compatible con ${cargoVac} por dominio técnico, trayectoria y capacidad de liderazgo.`,
-    experiencia: [
-      `${cargoActual} — ${empresaActual} · ${anios} años`,
-      `Semi Senior — ${EMPRESAS[(seed >> 7) % EMPRESAS.length]} · 3 años`,
-      `Junior — ${EMPRESAS[(seed >> 9) % EMPRESAS.length]} · 2 años`,
-    ],
-    educacion: [
-      `Ingeniería de Sistemas — Universidad Nacional`,
-      `Especialización en Arquitectura de Software — ${2015 + (seed % 8)}`,
-    ],
-    competenciasTecnicas: skills.map((s, i) => ({ nombre: s, nivel: 70 + ((seed + i * 7) % 30) })),
-    competenciasBlandas: pick(BLANDAS, seed, 4),
-    idiomas: pick(IDIOMAS, seed, 2),
-    certificaciones: pick(CERTS, seed, 2),
-    fortalezas: [
-      "Sólida arquitectura y buenas prácticas",
-      "Mentoría y liderazgo técnico",
-      "Comunicación clara con stakeholders",
-      "Orientación a producto y negocio",
-    ],
-    riesgos: [
-      compatibilidad < 80 ? "Experiencia limitada en el stack requerido" : "Duración corta en los últimos 2 roles",
-      "Sin experiencia previa en el sector",
-    ],
-    brechas: [
-      `Falta experiencia demostrable en ${SKILLS[(seed >> 11) % SKILLS.length]}`,
-      `Nivel intermedio en ${SKILLS[(seed >> 13) % SKILLS.length]}, la vacante pide avanzado`,
-    ],
-    preguntasStar: [
-      `Cuéntame un proyecto complejo como ${cargoActual} y qué decisiones técnicas tomaste.`,
-      `Describe una situación en la que lideraste técnicamente a un equipo. ¿Cuál fue el resultado?`,
-      `¿Cómo abordaste una mejora significativa de rendimiento o calidad? Cuantifica el impacto.`,
-      `Cuenta un conflicto con producto o negocio: tarea, acción y resultado.`,
-    ],
-    justificacion: `Con ${compatibilidad}% de compatibilidad respecto a "${cargoVac}", el perfil ${rec === "A+" || rec === "A" ? "avanza a entrevista técnica" : "podría considerarse tras validar brechas"}. Trayectoria consistente y competencias core alineadas.`,
-    liderazgo: 60 + ((seed >> 2) % 40),
-    estabilidad: 55 + ((seed >> 4) % 45),
-    ajusteCultural: 65 + ((seed >> 6) % 35),
-    aniosExperiencia: anios,
-  };
-}
 
 function toEvalExport(a: Analysis, v: Vacancy | null): EvaluationExport {
   return {
@@ -258,22 +154,86 @@ function CandidateAnalyzerPage() {
     if (!vacancy) { toast.error("Selecciona una vacante primero."); return; }
     if (!files.length) { toast.error("Sube al menos un CV."); return; }
     setAnalyses([]);
-    for (let i = 0; i < PHASES.length; i++) {
-      setPhaseIdx(i);
-      const start = (i / PHASES.length) * 100;
-      const end = ((i + 1) / PHASES.length) * 100;
-      const steps = 20;
-      for (let s = 0; s <= steps; s++) {
-        await new Promise((r) => setTimeout(r, 45));
-        setProgress(start + ((end - start) * s) / steps);
+    setPhaseIdx(0); setProgress(2);
+    const total = files.length;
+    const vacCtx = {
+      cargo: vacancy.cargo, empresa: vacancy.empresa,
+      ciudad: vacancy.ciudad ?? undefined, departamento: vacancy.departamento ?? undefined,
+      modalidad: vacancy.modalidad ?? undefined, nivel: vacancy.nivel ?? undefined,
+    };
+
+    // Phase 1-2: extract text from each file
+    setPhaseIdx(1);
+    const texts: { file: CvFile; text: string; error?: string }[] = [];
+    for (let i = 0; i < files.length; i++) {
+      const f = files[i];
+      setFiles((prev) => prev.map((x) => x.id === f.id ? { ...x, status: "analizando" } : x));
+      try {
+        const text = await extractCvText(f.file);
+        texts.push({ file: f, text });
+      } catch (e) {
+        texts.push({ file: f, text: "", error: (e as Error).message });
+        setFiles((prev) => prev.map((x) => x.id === f.id ? { ...x, status: "error" } : x));
       }
+      setProgress(((i + 1) / total) * 30);
     }
-    const results = files.map((f) => simulate(f, vacancy)).sort((a, b) => b.compatibilidad - a.compatibilidad);
+
+    // Phase 3-4: run AI evaluation in parallel
+    setPhaseIdx(3);
+    const results: Analysis[] = [];
+    let done = 0;
+    await Promise.all(texts.map(async (t) => {
+      if (t.error || !t.text) {
+        toast.error(`${t.file.name}: ${t.error ?? "sin texto extraído"}`);
+        done++; setProgress(30 + (done / total) * 65);
+        return;
+      }
+      try {
+        const r = await analyzeCV({ data: { fileName: t.file.name, text: t.text, vacancy: vacCtx } });
+        results.push({ ...r, id: t.file.id, fileId: t.file.id });
+        setFiles((prev) => prev.map((x) => x.id === t.file.id ? { ...x, status: "analizado" } : x));
+      } catch (e) {
+        toast.error(`${t.file.name}: ${(e as Error).message}`);
+        setFiles((prev) => prev.map((x) => x.id === t.file.id ? { ...x, status: "error" } : x));
+      } finally {
+        done++; setProgress(30 + (done / total) * 65);
+      }
+    }));
+
+    // Phase 5: sort
+    setPhaseIdx(4); setProgress(98);
+    results.sort((a, b) => b.compatibilidad - a.compatibilidad);
     setAnalyses(results);
-    setFiles((prev) => prev.map((f) => ({ ...f, status: "analizado" as const })));
     setPhaseIdx(-1); setProgress(0);
-    toast.success(`Análisis completado — ${results.length} candidatos evaluados.`);
+    if (results.length === 0) toast.error("No se pudo evaluar ningún CV.");
+    else toast.success(`Análisis completado — ${results.length} candidato${results.length === 1 ? "" : "s"} evaluado${results.length === 1 ? "" : "s"}.`);
     setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+  };
+
+  // Quick action state
+  const [quickResult, setQuickResult] = useState<QuickActionResult | null>(null);
+  const [quickLoading, setQuickLoading] = useState<QuickActionKey | null>(null);
+  const runAction = async (key: QuickActionKey) => {
+    if (key === "compare") { setCompareOpen(true); return; }
+    if (analyses.length === 0) { toast.error("Primero analiza al menos un candidato."); return; }
+    if (!vacancy) { toast.error("Selecciona una vacante primero."); return; }
+    setQuickLoading(key);
+    try {
+      const result = await runQuickAction({
+        data: {
+          action: key,
+          vacancy: { cargo: vacancy.cargo, empresa: vacancy.empresa, ciudad: vacancy.ciudad ?? undefined, modalidad: vacancy.modalidad ?? undefined, nivel: vacancy.nivel ?? undefined },
+          candidates: analyses.map((a) => ({
+            candidato: a.candidato, cargoActual: a.cargoActual, resumen: a.resumen,
+            competencias: a.competenciasBadges, fortalezas: a.fortalezas, riesgos: a.riesgos,
+            compatibilidad: a.compatibilidad, aniosExperiencia: a.aniosExperiencia,
+          })),
+        },
+      });
+      setQuickResult(result);
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally { setQuickLoading(null); }
   };
 
   const saveEvaluation = async (a: Analysis) => {
@@ -297,7 +257,7 @@ function CandidateAnalyzerPage() {
         ajuste_cultural: a.ajusteCultural,
         preguntas_sugeridas: a.preguntasStar.map((p) => ({ pregunta: p })),
         recomendacion: `${a.recomendacion} · ${a.nivelRecomendacion}`,
-        modelo_ia: "simulacion-v1",
+        modelo_ia: "gemini-2.5-pro",
       });
       if (eErr) throw eErr;
       toast.success(`Evaluación de ${a.candidato} guardada.`);
@@ -538,11 +498,17 @@ function CandidateAnalyzerPage() {
             <div className="glass-panel rounded-2xl p-3">
               <div className="px-2 pb-2 pt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Acciones rápidas</div>
               <ul className="space-y-1.5">
-                {QUICK_ACTIONS.map((a) => (
-                  <li key={a.title}>
-                    <button className="group grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3 rounded-xl border border-transparent bg-surface/40 p-3 text-left transition hover:border-primary/40 hover:bg-primary/5">
+                {QUICK_ACTIONS.map((a) => {
+                  const loading = quickLoading === a.key;
+                  return (
+                  <li key={a.key}>
+                    <button
+                      onClick={() => runAction(a.key)}
+                      disabled={quickLoading !== null}
+                      className="group grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3 rounded-xl border border-transparent bg-surface/40 p-3 text-left transition hover:border-primary/40 hover:bg-primary/5 disabled:opacity-60"
+                    >
                       <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-primary/15 text-primary transition group-hover:bg-primary group-hover:text-white">
-                        <a.icon className="h-4 w-4" />
+                        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <a.icon className="h-4 w-4" />}
                       </span>
                       <span className="min-w-0">
                         <span className="block text-sm font-semibold text-foreground">{a.title}</span>
@@ -551,7 +517,8 @@ function CandidateAnalyzerPage() {
                       <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-muted-foreground/60 transition group-hover:translate-x-0.5 group-hover:text-primary" />
                     </button>
                   </li>
-                ))}
+                  );
+                })}
               </ul>
             </div>
 
@@ -625,6 +592,7 @@ function CandidateAnalyzerPage() {
       )}
       {compareOpen && <CompareModal analyses={analyses.slice(0, 5)} onClose={() => setCompareOpen(false)} />}
       {previewFile && <FilePreview file={previewFile} onClose={() => setPreviewFile(null)} />}
+      {quickResult && <QuickResultModal result={quickResult} onClose={() => setQuickResult(null)} />}
     </AppShell>
   );
 }
@@ -1058,6 +1026,40 @@ function FilePreview({ file, onClose }: { file: CvFile; onClose: () => void }) {
               </a>
             </div>
           )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function QuickResultModal({ result, onClose }: { result: QuickActionResult; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-background/80 p-4 backdrop-blur-sm" onClick={onClose}>
+      <div className="glass-panel relative w-full max-w-3xl overflow-hidden rounded-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-start justify-between gap-4 border-b border-border/60 p-5">
+          <div className="min-w-0">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-primary">Copiloto IA</div>
+            <h3 className="mt-1 text-lg font-semibold">{result.titulo}</h3>
+          </div>
+          <button onClick={onClose} className="rounded-lg border border-border/60 bg-surface/40 p-2 text-muted-foreground transition hover:bg-primary/10 hover:text-primary">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="max-h-[70vh] overflow-y-auto p-6 space-y-5">
+          {result.intro && <p className="text-sm leading-relaxed text-muted-foreground">{result.intro}</p>}
+          {result.secciones.map((s, i) => (
+            <div key={i}>
+              <div className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-primary">{s.titulo}</div>
+              <ul className="space-y-2">
+                {s.items.map((it, j) => (
+                  <li key={j} className="flex gap-2 rounded-lg border border-border/40 bg-surface/40 p-3 text-sm text-muted-foreground">
+                    <span className="text-primary">•</span>
+                    <span className="min-w-0">{it}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
       </div>
     </div>
